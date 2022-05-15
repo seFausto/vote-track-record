@@ -9,6 +9,11 @@
 
   <ItemGroup>
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.2.3" />
+    <PackageReference Include="System.Configuration.ConfigurationManager" Version="6.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\VotingTrackRecord.Common\VotingTrackRecord.Common.csproj" />
   </ItemGroup>
 
 </Project>

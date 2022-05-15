@@ -1,3 +1,5 @@
+using System.Configuration;
+
 namespace VotingTrackRecord
 {
     public class Program
@@ -13,7 +15,7 @@ namespace VotingTrackRecord
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
 
-            var propublicaApiKey = builder.Configuration["PropublicaSettings:ApiKey"];
+            var propublicaSettings = builder.Configuration.GetSection("PropublicaSettings").Get<PropublicaSettings>();
 
             var app = builder.Build();
 
