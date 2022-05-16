@@ -25,6 +25,7 @@ namespace VotingTrackRecord.Controllers
         public IEnumerable<WeatherForecast> Get()
         {
             propublicaService.GetRecentVotesAsync("house");
+            propublicaService.SeachBills("veteran");
 
             return Enumerable.Range(1, 5).Select(index => new WeatherForecast
             {

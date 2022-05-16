@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Options;
+﻿#nullable disable
+using Microsoft.Extensions.Options;
 using Refit;
 using System.Text.Json.Serialization;
 using VotingTrackRecord;
@@ -7,26 +8,44 @@ namespace Propublica
 {
     public interface IPropublicaService
     {
-        Task<string> GetRecentVotesAsync(string chamber);
+        Task<RecentVotes> GetRecentVotesAsync(string chamber);
+        Task<BillSearch> SeachBills(string query);
     }
 
     public class PropublicaService : IPropublicaService
     {
-        PropublicaSettings propublicaSettings;
+        readonly PropublicaSettings propublicaSettings;
 
         public PropublicaService(IOptions<PropublicaSettings> options)
         {
             propublicaSettings = options.Value;
         }
 
-        public async Task<string> GetRecentVotesAsync(string chamber)
+        public async Task<RecentVotes> GetRecentVotesAsync(string chamber)
         {
             var apiService = RestService.For<IPropublicaApi>(propublicaSettings.Url);
             try
             {
                 var result = await apiService.GetRecentVotesAsync(chamber, propublicaSettings.ApiKey);
 
-                return null;
+                return result;
+            }
+            catch (Exception ex)
+            {
+
+                throw;
+            }
+
+        }
+
+        public async Task<BillSearch> SeachBills(string query)
+        {
+            var apiService = RestService.For<IPropublicaApi>(propublicaSettings.Url);
+            try
+            {
+                var result = await apiService.SearchBills(query, propublicaSettings.ApiKey);
+
+                return result;
             }
             catch (Exception ex)
             {
@@ -40,9 +59,11 @@ namespace Propublica
     public interface IPropublicaApi
     {
         [Get("/{chamber}/votes/recent.json")]
-        Task<Root> GetRecentVotesAsync(string chamber, [Header("X-API-KEY")] string apiKey);
+        Task<RecentVotes> GetRecentVotesAsync(string chamber, [Header("X-API-KEY")] string apiKey);
+        [Get("/bills/search.json?query={query}")]
+        Task<BillSearch> SearchBills(string query, [Header("X-API-KEY")] string apiKey);
     }
-    // Root myDeserializedClass = JsonSerializer.Deserialize<Root>(myJsonResponse);
+
     public class Amendment
     {
     }
@@ -119,7 +140,7 @@ namespace Propublica
         public string MajorityPosition { get; set; }
     }
 
-    public class Results
+    public class RecentVotesResults
     {
         [JsonPropertyName("chamber")]
         public string Chamber { get; set; }
@@ -134,7 +155,7 @@ namespace Propublica
         public List<Vote> Votes { get; set; }
     }
 
-    public class Root
+    public class RecentVotes
     {
         [JsonPropertyName("status")]
         public string Status { get; set; }
@@ -143,7 +164,7 @@ namespace Propublica
         public string Copyright { get; set; }
 
         [JsonPropertyName("results")]
-        public Results Results { get; set; }
+        public RecentVotesResults Results { get; set; }
     }
 
     public class Total
@@ -223,6 +244,43 @@ namespace Propublica
         [JsonPropertyName("total")]
         public Total Total { get; set; }
     }
+
+     public class CosponsorsByParty
+    {
+        [JsonPropertyName("D")]
+        public int? D { get; set; }
+
+        [JsonPropertyName("R")]
+        public int? R { get; set; }
+
+        [JsonPropertyName("ID")]
+        public int? ID { get; set; }
+    }
+
+    public class BillSearchResult
+    {
+        [JsonPropertyName("num_results")]
+        public int NumResults { get; set; }
+
+        [JsonPropertyName("offset")]
+        public int Offset { get; set; }
+
+        [JsonPropertyName("bills")]
+        public List<Bill> Bills { get; set; }
+    }
+
+    public class BillSearch
+    {
+        [JsonPropertyName("status")]
+        public string Status { get; set; }
+
+        [JsonPropertyName("copyright")]
+        public string Copyright { get; set; }
+
+        [JsonPropertyName("results")]
+        public List<BillSearchResult> Results { get; set; }
+    }
+
 
 
 }
