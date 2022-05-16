@@ -14,8 +14,8 @@ namespace VotingTrackRecord
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
 
-            var propublicaSettings = builder.Configuration.GetSection("PropublicaSettings").Get<PropublicaSettings>();
-            builder.Services.AddSingleton(propublicaSettings);
+            var propublicaSettings = builder.Configuration.GetSection("PropublicaSettings");
+            builder.Services.Configure<PropublicaSettings>(propublicaSettings);
 
             var app = builder.Build();
             

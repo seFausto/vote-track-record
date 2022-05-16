@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 
 namespace VotingTrackRecord.Controllers
 {
@@ -12,10 +13,11 @@ namespace VotingTrackRecord.Controllers
     };
 
         private readonly ILogger<WeatherForecastController> _logger;
-
-        public WeatherForecastController(ILogger<WeatherForecastController> logger)
+        private readonly PropublicaSettings _appSettings;
+        public WeatherForecastController(ILogger<WeatherForecastController> logger, IOptions<PropublicaSettings> options)
         {
             _logger = logger;
+            _appSettings = options.Value;
         }
 
         [HttpGet(Name = "GetWeatherForecast")]

@@ -3,11 +3,15 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.2.32505.173
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VotingTrackRecord", "VotingTrackRecord\VotingTrackRecord.csproj", "{002F7285-6EDB-4FAC-9668-88BA344DB1E2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "VotingTrackRecord", "VotingTrackRecord\VotingTrackRecord.csproj", "{002F7285-6EDB-4FAC-9668-88BA344DB1E2}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Common", "Common", "{8B4EAB2C-3339-4DD5-9EBE-1ED27365EB46}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VotingTrackRecord.Common", "VotingTrackRecord.Common\VotingTrackRecord.Common.csproj", "{1E02275E-E117-470C-9A15-351B4DFCC585}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "VotingTrackRecord.Common", "VotingTrackRecord.Common\VotingTrackRecord.Common.csproj", "{1E02275E-E117-470C-9A15-351B4DFCC585}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Propublica", "PropublicaApi\Propublica.csproj", "{97139E77-8F77-4138-8790-7AA9937B6839}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Persistance", "Persistance", "{101541DD-D2F4-442B-B5C3-4EC6187E5A09}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -23,12 +27,17 @@ Global
 		{1E02275E-E117-470C-9A15-351B4DFCC585}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1E02275E-E117-470C-9A15-351B4DFCC585}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1E02275E-E117-470C-9A15-351B4DFCC585}.Release|Any CPU.Build.0 = Release|Any CPU
+		{97139E77-8F77-4138-8790-7AA9937B6839}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{97139E77-8F77-4138-8790-7AA9937B6839}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{97139E77-8F77-4138-8790-7AA9937B6839}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{97139E77-8F77-4138-8790-7AA9937B6839}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{1E02275E-E117-470C-9A15-351B4DFCC585} = {8B4EAB2C-3339-4DD5-9EBE-1ED27365EB46}
+		{97139E77-8F77-4138-8790-7AA9937B6839} = {101541DD-D2F4-442B-B5C3-4EC6187E5A09}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {4FB6A67D-A071-413C-A867-EC7DE4878F83}
