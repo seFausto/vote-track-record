@@ -1,3 +1,4 @@
+using Propublica;
 using System.Configuration;
 
 namespace VotingTrackRecord
@@ -16,6 +17,8 @@ namespace VotingTrackRecord
 
             var propublicaSettings = builder.Configuration.GetSection("PropublicaSettings");
             builder.Services.Configure<PropublicaSettings>(propublicaSettings);
+
+            builder.Services.AddScoped<IPropublicaService, PropublicaService>();
 
             var app = builder.Build();
             

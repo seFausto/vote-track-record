@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
+using Propublica;
 
 namespace VotingTrackRecord.Controllers
 {
@@ -13,16 +14,18 @@ namespace VotingTrackRecord.Controllers
     };
 
         private readonly ILogger<WeatherForecastController> _logger;
-        private readonly PropublicaSettings _appSettings;
-        public WeatherForecastController(ILogger<WeatherForecastController> logger, IOptions<PropublicaSettings> options)
+        private readonly IPropublicaService propublicaService;
+        public WeatherForecastController(IPropublicaService propublicaService,  ILogger<WeatherForecastController> logger)
         {
             _logger = logger;
-            _appSettings = options.Value;
+            this.propublicaService = propublicaService;
         }
 
         [HttpGet(Name = "GetWeatherForecast")]
         public IEnumerable<WeatherForecast> Get()
         {
+            propublicaService.GetRecentVotesAsync("house");
+
             return Enumerable.Range(1, 5).Select(index => new WeatherForecast
             {
                 Date = DateTime.Now.AddDays(index),

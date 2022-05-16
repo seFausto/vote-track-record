@@ -13,6 +13,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\PropublicaApi\PropublicaService.csproj" />
     <ProjectReference Include="..\VotingTrackRecord.Common\VotingTrackRecord.Common.csproj" />
   </ItemGroup>
 
