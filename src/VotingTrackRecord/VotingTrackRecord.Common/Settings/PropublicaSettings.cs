@@ -1,4 +1,4 @@
-﻿namespace VotingTrackRecord
+﻿namespace VotingTrackRecord.Common.Settings
 {
     public class PropublicaSettings
     {

@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
-using Propublica;
+using VotingTrackRecordClasses;
 
 namespace VotingTrackRecord.Controllers
 {
@@ -10,12 +10,12 @@ namespace VotingTrackRecord.Controllers
     {
         private static readonly string[] Summaries = new[]
         {
-        "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-    };
+            "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
+        };
 
         private readonly ILogger<WeatherForecastController> _logger;
         private readonly IPropublicaService propublicaService;
-        public WeatherForecastController(IPropublicaService propublicaService,  ILogger<WeatherForecastController> logger)
+        public WeatherForecastController(IPropublicaService propublicaService, ILogger<WeatherForecastController> logger)
         {
             _logger = logger;
             this.propublicaService = propublicaService;
