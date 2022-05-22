@@ -1,6 +1,8 @@
 using VotingTrackRecordClasses;
 using System.Configuration;
 using VotingTrackRecord.Common.Settings;
+using DatabaseRepository;
+using VoteTracker;
 
 namespace VotingTrackRecord
 {
@@ -23,6 +25,10 @@ namespace VotingTrackRecord
             builder.Services.Configure<DatabaseSettings>(databaseSettings);
 
             builder.Services.AddScoped<IPropublicaService, PropublicaService>();
+            builder.Services.AddScoped<IVotingTrackRecordRepository, VotingTrackRecordRepository>();
+            builder.Services.AddScoped<IVoteTrackerBusiness, VoteTrackerBusiness>();
+
+
 
             var app = builder.Build();
             

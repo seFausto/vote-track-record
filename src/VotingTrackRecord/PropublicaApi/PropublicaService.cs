@@ -1,7 +1,7 @@
 ﻿#nullable disable
 using Microsoft.Extensions.Options;
 using Refit;
-using VotingTrackRecord;
+using VotingTrackRecord.Common.Settings;
 
 namespace VotingTrackRecordClasses
 {
