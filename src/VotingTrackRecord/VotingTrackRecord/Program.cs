@@ -3,6 +3,7 @@ using System.Configuration;
 using VotingTrackRecord.Common.Settings;
 using DatabaseRepository;
 using VoteTracker;
+using Serilog;
 
 namespace VotingTrackRecord
 {
@@ -24,11 +25,18 @@ namespace VotingTrackRecord
             var databaseSettings = builder.Configuration.GetSection("DatabaseSettings");
             builder.Services.Configure<DatabaseSettings>(databaseSettings);
 
+            var twitterSettings = builder.Configuration.GetSection("TwitterSettings");
+            builder.Services.Configure<TwitterSettings>(twitterSettings);
+
             builder.Services.AddScoped<IPropublicaService, PropublicaService>();
             builder.Services.AddScoped<IVotingTrackRecordRepository, VotingTrackRecordRepository>();
             builder.Services.AddScoped<IVoteTrackerBusiness, VoteTrackerBusiness>();
 
-
+            Log.Logger = new LoggerConfiguration()
+                .MinimumLevel.Debug()
+                .Enrich.FromLogContext()
+                .WriteTo.Http(builder.Configuration["ApplicationSettings:LoggingHttpEndpoint"].ToString(), 1000)
+                .CreateLogger();
 
             var app = builder.Build();
             
