@@ -19,22 +19,37 @@ namespace VotingTrackRecord.Controllers
             this.twitterSettings = settings.Value;
         }
 
-        [HttpGet("{challange}")]
-        public string WebhookChallange(string challenge)
+        [HttpGet()]
+        public IActionResult WebhookChallange(string challenge)
         {
             Log.Information("Webhook challange received {Challange}", challenge);
 
-            var key = twitterSettings.ConsumerSecret;
+            var key = twitterSettings.ApiKeySecret;
 
-            using var hmacsha256 = new HMACSHA256(Encoding.UTF8.GetBytes(key));
-            
-            var hash = hmacsha256.ComputeHash(Encoding.UTF8.GetBytes(challenge));
-            
-            return JsonSerializer.Serialize(
-                new
-                {
-                    response_token = $"sha256={Convert.ToBase64String(hash)}"
-                });
+            try
+            {
+                using var hmacsha256 = new HMACSHA256(Encoding.UTF8.GetBytes(key));
+
+                var hash = hmacsha256.ComputeHash(Encoding.UTF8.GetBytes(challenge));
+
+                string value = JsonSerializer.Serialize(
+                                new
+                                {
+                                    response_token = $"sha256={Convert.ToBase64String(hash)}"
+                                });
+
+                return Ok(
+                    new
+                    {
+                        response_token = $"sha256={Convert.ToBase64String(hash)}"
+                    });
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "Error while computing hash");
+                throw;
+            }
+
         }
 
         [HttpPost]
