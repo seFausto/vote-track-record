@@ -1,6 +1,7 @@
 ﻿#nullable disable
 using Microsoft.Extensions.Options;
 using Refit;
+using Serilog;
 using VotingTrackRecord.Common.Settings;
 
 namespace VotingTrackRecordClasses
@@ -31,6 +32,7 @@ namespace VotingTrackRecordClasses
             }
             catch (Exception ex)
             {
+                Log.Error(ex, "Error getting recent votes");
                 throw;
             }
 
@@ -47,6 +49,7 @@ namespace VotingTrackRecordClasses
             }
             catch (Exception ex)
             {
+                Log.Error(ex, "Error in Search bills");
                 throw;
             }
 
