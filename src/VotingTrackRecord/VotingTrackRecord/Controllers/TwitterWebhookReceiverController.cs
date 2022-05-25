@@ -20,9 +20,9 @@ namespace VotingTrackRecord.Controllers
         }
 
         [HttpGet()]
-        public IActionResult WebhookChallange(string challenge)
+        public IActionResult WebhookChallange(string crc_token)
         {
-            Log.Information("Webhook challange received {Challange}", challenge);
+            Log.Information("Webhook challange received {Challange}", crc_token);
 
             var key = twitterSettings.ApiKeySecret;
 
@@ -30,7 +30,7 @@ namespace VotingTrackRecord.Controllers
             {
                 using var hmacsha256 = new HMACSHA256(Encoding.UTF8.GetBytes(key));
 
-                var hash = hmacsha256.ComputeHash(Encoding.UTF8.GetBytes(challenge));
+                var hash = hmacsha256.ComputeHash(Encoding.UTF8.GetBytes(crc_token));
 
                 string value = JsonSerializer.Serialize(
                                 new
