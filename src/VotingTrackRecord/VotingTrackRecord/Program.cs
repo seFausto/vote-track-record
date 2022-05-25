@@ -81,8 +81,9 @@ namespace VotingTrackRecord
                 }
             });
             var business = app.Services.GetRequiredService<ITwitterBusiness>();
-            BackgroundJob.Schedule(() => business.GetTweets(), TimeSpan.FromMinutes(1));
- 
+
+            RecurringJob.AddOrUpdate("Get Latest Tweets", () => business.GetTweets(), Cron.Minutely);
+
             app.UseHttpsRedirection();
 
             app.UseAuthorization();

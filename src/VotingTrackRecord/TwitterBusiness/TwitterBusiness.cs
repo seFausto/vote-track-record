@@ -12,7 +12,7 @@ namespace TwitterService
     public class TwitterBusiness : ITwitterBusiness
     {
         private readonly TwitterSettings twitterSettings;
-        private Dictionary<long, DateTimeOffset> friendIdsLastTweet = new Dictionary<long, DateTimeOffset>();
+        private static Dictionary<long, DateTimeOffset> friendIdsLastTweet = null;
         public TwitterBusiness(IOptions<TwitterSettings> options)
         {
             this.twitterSettings = options.Value;
@@ -21,6 +21,11 @@ namespace TwitterService
 
         private  void SetFriendIds()
         {
+            if (friendIdsLastTweet is not null)
+                return;
+            
+            friendIdsLastTweet = new Dictionary<long, DateTimeOffset>();
+            
             var userClient = new TwitterClient(twitterSettings.ApiKey,
                 twitterSettings.ApiKeySecret, twitterSettings.AccessToken, twitterSettings.AccessTokenSecret);
 
@@ -37,8 +42,6 @@ namespace TwitterService
             var userClient = new TwitterClient(twitterSettings.ApiKey,
                 twitterSettings.ApiKeySecret, twitterSettings.AccessToken, twitterSettings.AccessTokenSecret);
             
-           
-
             foreach (var item in friendIdsLastTweet)
             {
                 var tweets = await userClient.Timelines.GetUserTimelineAsync(item.Key);
@@ -48,10 +51,10 @@ namespace TwitterService
                  if (latestTweet is null)
                     continue;
 
-                if (latestTweet.CreatedAt > item.Value)
+                if (latestTweet.CreatedAt > friendIdsLastTweet[item.Key])
                 {
                     friendIdsLastTweet[item.Key] = latestTweet.CreatedAt;
-                    Console.WriteLine(latestTweet.Text);
+                    Console.WriteLine($"{latestTweet.CreatedBy} -  {latestTweet.Text}");
                 }
             }
         }
