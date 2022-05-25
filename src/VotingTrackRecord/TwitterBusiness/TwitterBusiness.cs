@@ -6,32 +6,54 @@ namespace TwitterService
 {
     public interface ITwitterBusiness
     {
-        Task<string> GetTweets();
+        Task GetTweets();
     }
 
     public class TwitterBusiness : ITwitterBusiness
     {
         private readonly TwitterSettings twitterSettings;
+        private Dictionary<long, DateTimeOffset> friendIdsLastTweet = new Dictionary<long, DateTimeOffset>();
         public TwitterBusiness(IOptions<TwitterSettings> options)
         {
             this.twitterSettings = options.Value;
+            SetFriendIds();          
         }
 
-        public async Task<string> GetTweets()
+        private  void SetFriendIds()
         {
             var userClient = new TwitterClient(twitterSettings.ApiKey,
                 twitterSettings.ApiKeySecret, twitterSettings.AccessToken, twitterSettings.AccessTokenSecret);
 
-            var friendsId = await userClient.Users.GetFriendIdsAsync(twitterSettings.UserId);
+            var friendsIds =  userClient.Users.GetFriendIdsAsync(twitterSettings.UserId).Result;
 
-            var result = string.Empty;
-            foreach (var item in friendsId)
+            foreach (var friendId in friendsIds)
             {
-                result += item.ToString();
+                friendIdsLastTweet.Add(friendId, DateTimeOffset.MinValue);
             }
+        }
 
-            Console.WriteLine(result);
-            return result;
+        public async Task GetTweets()
+        {
+            var userClient = new TwitterClient(twitterSettings.ApiKey,
+                twitterSettings.ApiKeySecret, twitterSettings.AccessToken, twitterSettings.AccessTokenSecret);
+            
+           
+
+            foreach (var item in friendIdsLastTweet)
+            {
+                var tweets = await userClient.Timelines.GetUserTimelineAsync(item.Key);
+
+                var latestTweet = tweets?.FirstOrDefault();
+                
+                 if (latestTweet is null)
+                    continue;
+
+                if (latestTweet.CreatedAt > item.Value)
+                {
+                    friendIdsLastTweet[item.Key] = latestTweet.CreatedAt;
+                    Console.WriteLine(latestTweet.Text);
+                }
+            }
         }
     }
 }
