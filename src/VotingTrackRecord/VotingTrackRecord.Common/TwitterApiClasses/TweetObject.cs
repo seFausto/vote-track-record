@@ -10,16 +10,16 @@ namespace VotingTrackRecord.Common.TwitterApiClasses
     public class TweetObject
     {
         [JsonPropertyName("created_at")]
-        public string CreatedAt { get; set; }
+        public string CreatedAt { get; set; } = string.Empty;
 
         [JsonPropertyName("id")]
         public long Id { get; set; }
 
         [JsonPropertyName("id_str")]
-        public string IdStr { get; set; }
+        public string IdStr { get; set; } = string.Empty;
 
         [JsonPropertyName("text")]
-        public string Text { get; set; }
+        public string Text { get; set; } = string.Empty;
 
         //[JsonPropertyName("user")]
         //public User User { get; set; }

@@ -7,6 +7,7 @@ using Serilog;
 using Hangfire;
 using Hangfire.SqlServer;
 using HangfireBasicAuthenticationFilter;
+using TwitterService;
 
 namespace VotingTrackRecord
 {
@@ -34,6 +35,7 @@ namespace VotingTrackRecord
             builder.Services.AddScoped<IPropublicaService, PropublicaService>();
             builder.Services.AddScoped<IVotingTrackRecordRepository, VotingTrackRecordRepository>();
             builder.Services.AddScoped<IVoteTrackerBusiness, VoteTrackerBusiness>();
+            builder.Services.AddSingleton<ITwitterBusiness, TwitterBusiness>();
 
             Log.Logger = new LoggerConfiguration()
                 .MinimumLevel.Debug()
@@ -46,15 +48,15 @@ namespace VotingTrackRecord
                 .UseSimpleAssemblyNameTypeSerializer()
                 .UseRecommendedSerializerSettings()
                 .UseSqlServerStorage(builder.Configuration["ConnectionStrings:HangfireConnection"],
-                new SqlServerStorageOptions
-                {
-                    CommandBatchMaxTimeout = TimeSpan.FromMinutes(5),
-                    SlidingInvisibilityTimeout = TimeSpan.FromMinutes(5),
-                    QueuePollInterval = TimeSpan.Zero,
-                    UseRecommendedIsolationLevel = true,
-                    UsePageLocksOnDequeue = true,
-                    DisableGlobalLocks = true
-                }));
+                    new SqlServerStorageOptions
+                    {
+                        CommandBatchMaxTimeout = TimeSpan.FromMinutes(5),
+                        SlidingInvisibilityTimeout = TimeSpan.FromMinutes(5),
+                        QueuePollInterval = TimeSpan.Zero,
+                        UseRecommendedIsolationLevel = true,
+                        UsePageLocksOnDequeue = true,
+                        DisableGlobalLocks = true
+                    }));
 
             builder.Services.AddHangfireServer();
 
@@ -78,9 +80,9 @@ namespace VotingTrackRecord
                     }
                 }
             });
-
-            BackgroundJob.Schedule(() => Console.WriteLine("Hello world!"), TimeSpan.FromSeconds(5));
-
+            var business = app.Services.GetRequiredService<ITwitterBusiness>();
+            BackgroundJob.Schedule(() => business.GetTweets(), TimeSpan.FromMinutes(1));
+ 
             app.UseHttpsRedirection();
 
             app.UseAuthorization();
@@ -88,7 +90,7 @@ namespace VotingTrackRecord
             app.MapControllers();
             app.MapHangfireDashboard();
 
-            
+
 
             app.Run();
         }
