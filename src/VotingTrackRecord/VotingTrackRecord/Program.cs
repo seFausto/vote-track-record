@@ -82,16 +82,15 @@ namespace VotingTrackRecord
             });
             var business = app.Services.GetRequiredService<ITwitterBusiness>();
 
-            RecurringJob.AddOrUpdate("Get Latest Tweets", () => business.GetTweets(), Cron.Minutely);
+            RecurringJob.AddOrUpdate("Get Latest Tweets", () => business.GetTweets(), "*/15 * * * *");
 
             app.UseHttpsRedirection();
 
             app.UseAuthorization();
 
             app.MapControllers();
+            
             app.MapHangfireDashboard();
-
-
 
             app.Run();
         }
