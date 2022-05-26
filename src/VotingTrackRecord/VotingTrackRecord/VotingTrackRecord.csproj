@@ -23,7 +23,6 @@
     <ProjectReference Include="..\TwitterBusiness\TwitterService.csproj" />
     <ProjectReference Include="..\VoteTrackerBusiness\VoteTracker.csproj" />
     <ProjectReference Include="..\VotingTrackRecord.Common\VotingTrackRecord.Common.csproj" />
-    <ProjectReference Include="..\VotingTrackRecordRepository\DatabaseRepository.csproj" />
   </ItemGroup>
 
 </Project>

@@ -12,6 +12,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\VoteTrackerBusiness\VoteTracker.csproj" />
     <ProjectReference Include="..\VotingTrackRecord.Common\VotingTrackRecord.Common.csproj" />
   </ItemGroup>
 

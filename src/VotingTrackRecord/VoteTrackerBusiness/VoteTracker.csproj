@@ -8,7 +8,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\PropublicaApi\PropublicaService.csproj" />
-    <ProjectReference Include="..\VotingTrackRecordRepository\DatabaseRepository.csproj" />
   </ItemGroup>
 
 </Project>

@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Options;
 using Tweetinvi;
+using VoteTracker;
 using VotingTrackRecord.Common.Settings;
 
 namespace TwitterService
@@ -9,51 +10,82 @@ namespace TwitterService
         Task GetTweets();
     }
 
+    internal class FriendIdTweetTime
+    {
+        public long FriendId { get; set; }
+        public DateTimeOffset LastTweet { get; set; }
+        public DateTimeOffset LastCheck { get; set; }
+    }
+
+
     public class TwitterBusiness : ITwitterBusiness
     {
+        private const int BatchSize = 5;
+
         private readonly TwitterSettings twitterSettings;
-        private static Dictionary<long, DateTimeOffset> friendIdsLastTweet = null;
-        public TwitterBusiness(IOptions<TwitterSettings> options)
+
+        private readonly IVoteTrackerBusiness voteTrackerBusiness;
+
+        private static List<FriendIdTweetTime>? friendIdsLastTweet = null;
+
+
+        public TwitterBusiness(IOptions<TwitterSettings> options, IVoteTrackerBusiness voteTrackerBusiness)
         {
             this.twitterSettings = options.Value;
-            SetFriendIds();          
+
+            this.voteTrackerBusiness = voteTrackerBusiness;
+
+            SetFriendIds();
         }
 
-        private  void SetFriendIds()
+        private void SetFriendIds()
         {
             if (friendIdsLastTweet is not null)
                 return;
-            
-            friendIdsLastTweet = new Dictionary<long, DateTimeOffset>();
-            
+
+            friendIdsLastTweet = new List<FriendIdTweetTime>();
+
             var userClient = new TwitterClient(twitterSettings.ApiKey,
                 twitterSettings.ApiKeySecret, twitterSettings.AccessToken, twitterSettings.AccessTokenSecret);
 
-            var friendsIds =  userClient.Users.GetFriendIdsAsync(twitterSettings.UserId).Result;
+            var friendsIds = userClient.Users.GetFriendIdsAsync(twitterSettings.UserId).Result;
 
             foreach (var friendId in friendsIds)
             {
-                friendIdsLastTweet.Add(friendId, DateTimeOffset.MinValue);
+                friendIdsLastTweet.Add(new FriendIdTweetTime
+                {
+                    FriendId = friendId,
+                    LastTweet = DateTimeOffset.MinValue,
+                    LastCheck = DateTimeOffset.MinValue
+                });
             }
         }
 
         public async Task GetTweets()
         {
-            var userClient = new TwitterClient(twitterSettings.ApiKey,
-                twitterSettings.ApiKeySecret, twitterSettings.AccessToken, twitterSettings.AccessTokenSecret);
-            
-            foreach (var item in friendIdsLastTweet)
+            if (friendIdsLastTweet is null)
+                return;
+
+            var userClient = new TwitterClient(twitterSettings.ApiKey, twitterSettings.ApiKeySecret,
+                twitterSettings.AccessToken, twitterSettings.AccessTokenSecret);
+
+
+            foreach (var item in friendIdsLastTweet.OrderBy(x => x.LastCheck).Take(BatchSize))
             {
-                var tweets = await userClient.Timelines.GetUserTimelineAsync(item.Key);
+                item.LastCheck = DateTimeOffset.Now;
+
+                var tweets = await userClient.Timelines.GetUserTimelineAsync(item.FriendId);
 
                 var latestTweet = tweets?.FirstOrDefault();
-                
-                 if (latestTweet is null)
+
+                if (latestTweet is null)
                     continue;
 
-                if (latestTweet.CreatedAt > friendIdsLastTweet[item.Key])
+                if (latestTweet.CreatedAt > item.LastTweet)
                 {
-                    friendIdsLastTweet[item.Key] = latestTweet.CreatedAt;
+                    item.LastTweet = latestTweet.CreatedAt;
+                    await voteTrackerBusiness.ProcessTweet(latestTweet.FullText, latestTweet.CreatedBy?.ToString() ?? string.Empty);
+
                     Console.WriteLine($"{latestTweet.CreatedBy} -  {latestTweet.Text}");
                 }
             }

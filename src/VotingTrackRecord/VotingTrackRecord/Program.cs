@@ -1,7 +1,6 @@
 using VotingTrackRecordClasses;
 using System.Configuration;
 using VotingTrackRecord.Common.Settings;
-using DatabaseRepository;
 using VoteTracker;
 using Serilog;
 using Hangfire;
@@ -32,9 +31,9 @@ namespace VotingTrackRecord
             var twitterSettings = builder.Configuration.GetSection("TwitterSettings");
             builder.Services.Configure<TwitterSettings>(twitterSettings);
 
-            builder.Services.AddScoped<IPropublicaService, PropublicaService>();
-            builder.Services.AddScoped<IVotingTrackRecordRepository, VotingTrackRecordRepository>();
-            builder.Services.AddScoped<IVoteTrackerBusiness, VoteTrackerBusiness>();
+            builder.Services.AddSingleton<IPropublicaService, PropublicaService>();
+          
+            builder.Services.AddSingleton<IVoteTrackerBusiness, VoteTrackerBusiness>();
             builder.Services.AddSingleton<ITwitterBusiness, TwitterBusiness>();
 
             Log.Logger = new LoggerConfiguration()
@@ -82,7 +81,7 @@ namespace VotingTrackRecord
             });
             var business = app.Services.GetRequiredService<ITwitterBusiness>();
 
-            RecurringJob.AddOrUpdate("Get Latest Tweets", () => business.GetTweets(), "*/15 * * * *");
+            RecurringJob.AddOrUpdate("Get Latest Tweets", () => business.GetTweets(), Cron.Minutely);  // "*/15 * * * *");
 
             app.UseHttpsRedirection();
 
@@ -91,7 +90,7 @@ namespace VotingTrackRecord
             app.MapControllers();
             
             app.MapHangfireDashboard();
-
+            
             app.Run();
         }
     }
