@@ -27,6 +27,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "VotingTrackRecordTests", "V
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TwitterService", "TwitterBusiness\TwitterService.csproj", "{9F8EF9B1-101F-40CA-B158-189780AD3599}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Repository", "Repository\Repository.csproj", "{31C8D443-E1B0-4C10-9400-9A000D23A158}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -57,6 +59,10 @@ Global
 		{9F8EF9B1-101F-40CA-B158-189780AD3599}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9F8EF9B1-101F-40CA-B158-189780AD3599}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9F8EF9B1-101F-40CA-B158-189780AD3599}.Release|Any CPU.Build.0 = Release|Any CPU
+		{31C8D443-E1B0-4C10-9400-9A000D23A158}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{31C8D443-E1B0-4C10-9400-9A000D23A158}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{31C8D443-E1B0-4C10-9400-9A000D23A158}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{31C8D443-E1B0-4C10-9400-9A000D23A158}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -70,6 +76,7 @@ Global
 		{0FBDAB07-2852-492A-9DCE-5AA0EE2A0C1A} = {D06524B9-3CD9-4C7F-8490-3924B66BC0F1}
 		{3747E9CF-2E48-4389-B5B1-4DD23FC19D25} = {B715A81F-B5E1-4292-8E6A-5A8C0162BDBE}
 		{9F8EF9B1-101F-40CA-B158-189780AD3599} = {ECEF1292-CEB5-4158-9710-6884BE74796C}
+		{31C8D443-E1B0-4C10-9400-9A000D23A158} = {A1C63ED6-F2F7-41D5-AA7E-0BC331BC13DA}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {4FB6A67D-A071-413C-A867-EC7DE4878F83}

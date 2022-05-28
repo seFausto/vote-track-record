@@ -8,8 +8,8 @@ namespace VotingTrackRecord.Controllers
     [ApiController]
     public class VotingTrackRecordController : ControllerBase
     {
-        private readonly IVoteTrackerBusiness voteTrackerBusiness;
-        public VotingTrackRecordController(IVoteTrackerBusiness voteTrackerBusiness)
+        private readonly IPropublicaBusiness voteTrackerBusiness;
+        public VotingTrackRecordController(IPropublicaBusiness voteTrackerBusiness)
         {
             this.voteTrackerBusiness = voteTrackerBusiness;
         }

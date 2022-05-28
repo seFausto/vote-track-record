@@ -7,6 +7,7 @@ using Hangfire;
 using Hangfire.SqlServer;
 using HangfireBasicAuthenticationFilter;
 using TwitterService;
+using Repository;
 
 namespace VotingTrackRecord
 {
@@ -31,10 +32,14 @@ namespace VotingTrackRecord
             var twitterSettings = builder.Configuration.GetSection("TwitterSettings");
             builder.Services.Configure<TwitterSettings>(twitterSettings);
 
-            builder.Services.AddSingleton<IPropublicaService, PropublicaService>();
+
+            builder.Services.AddSingleton<IPropublicaRepository, PropublicaRepository>();
+            builder.Services.AddSingleton<IPropublicaApiService, PropublicaApiService>();
           
-            builder.Services.AddSingleton<IVoteTrackerBusiness, VoteTrackerBusiness>();
+            builder.Services.AddSingleton<IPropublicaBusiness, PropublicaBusiness>();
             builder.Services.AddSingleton<ITwitterBusiness, TwitterBusiness>();
+
+
 
             Log.Logger = new LoggerConfiguration()
                 .MinimumLevel.Debug()
@@ -81,7 +86,8 @@ namespace VotingTrackRecord
             });
             var business = app.Services.GetRequiredService<ITwitterBusiness>();
 
-            RecurringJob.AddOrUpdate("Get Latest Tweets", () => business.GetTweets(), Cron.Minutely);  // "*/15 * * * *");
+            business.GetTweets();
+           // RecurringJob.AddOrUpdate("Get Latest Tweets", () => business.GetTweets(), Cron.Minutely);  // "*/15 * * * *");
 
             app.UseHttpsRedirection();
 

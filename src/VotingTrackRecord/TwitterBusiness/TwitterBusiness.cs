@@ -24,12 +24,12 @@ namespace TwitterService
 
         private readonly TwitterSettings twitterSettings;
 
-        private readonly IVoteTrackerBusiness voteTrackerBusiness;
+        private readonly IPropublicaBusiness voteTrackerBusiness;
 
         private static List<FriendIdTweetTime>? friendIdsLastTweet = null;
 
 
-        public TwitterBusiness(IOptions<TwitterSettings> options, IVoteTrackerBusiness voteTrackerBusiness)
+        public TwitterBusiness(IOptions<TwitterSettings> options, IPropublicaBusiness voteTrackerBusiness)
         {
             this.twitterSettings = options.Value;
 
@@ -84,7 +84,9 @@ namespace TwitterService
                 if (latestTweet.CreatedAt > item.LastTweet)
                 {
                     item.LastTweet = latestTweet.CreatedAt;
-                    await voteTrackerBusiness.ProcessTweet(latestTweet.FullText, latestTweet.CreatedBy?.ToString() ?? string.Empty);
+                    
+                    await voteTrackerBusiness.ProcessTweet(latestTweet.CreatedBy.ScreenName, latestTweet.CreatedBy.Name, 
+                        latestTweet.CreatedBy.Name, latestTweet.FullText);
 
                     Console.WriteLine($"{latestTweet.CreatedBy} -  {latestTweet.Text}");
                 }

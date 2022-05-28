@@ -104,13 +104,13 @@ namespace VotingTrackRecord.Common.PropublicaApiClasses
         public string NextElection { get; set; }
 
         [JsonPropertyName("total_votes")]
-        public int TotalVotes { get; set; }
+        public int? TotalVotes { get; set; }
 
         [JsonPropertyName("missed_votes")]
-        public int MissedVotes { get; set; }
+        public int? MissedVotes { get; set; }
 
         [JsonPropertyName("total_present")]
-        public int TotalPresent { get; set; }
+        public int? TotalPresent { get; set; }
 
         [JsonPropertyName("last_updated")]
         public string LastUpdated { get; set; }
@@ -158,10 +158,10 @@ namespace VotingTrackRecord.Common.PropublicaApiClasses
         public string Chamber { get; set; }
 
         [JsonPropertyName("num_results")]
-        public int NumResults { get; set; }
+        public int? NumResults { get; set; }
 
         [JsonPropertyName("offset")]
-        public int Offset { get; set; }
+        public int? Offset { get; set; }
 
         [JsonPropertyName("members")]
         public List<Member> Members { get; set; }

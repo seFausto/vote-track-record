@@ -4,51 +4,58 @@ using Refit;
 using Serilog;
 using VotingTrackRecord.Common.Settings;
 using VotingTrackRecord.Common.PropublicaApiClasses;
+using Repository;
+
 
 namespace VotingTrackRecordClasses
 {
-    public interface IPropublicaService
+    public interface IPropublicaApiService
     {
         Task<RecentVotes> GetRecentVotesAsync(string chamber);
         Task<BillSearch> SeachBills(string query);
-        Task<Member> GetMemberByName(string userName);
+        Task<Member> GetMemberByNameAsync(string userName, string name);
     }
 
-    public class PropublicaService : IPropublicaService
+    public class PropublicaApiService : IPropublicaApiService
     {
-        readonly PropublicaSettings propublicaSettings;
+        private readonly PropublicaSettings propublicaSettings;
+        private readonly IPropublicaRepository propublicaRepository;
 
-        public PropublicaService(IOptions<PropublicaSettings> options)
+        public PropublicaApiService(IOptions<PropublicaSettings> options, IPropublicaRepository propublicaRepository)
         {
+            this.propublicaRepository = propublicaRepository;
             propublicaSettings = options.Value;
         }
 
-        public async Task<Member> GetMemberByName(string userName)
+        public async Task<Member> GetMemberByNameAsync(string userName, string name)
         {
             var apiService = RestService.For<IPropublicaApi>(propublicaSettings.Url);
             var chambers = new List<string>() { "house", "senate" };
-            
+
             try
             {
                 foreach (var chamber in chambers)
                 {
-                    var members = await apiService.GetMembersAsync(propublicaSettings.Congress, chamber, propublicaSettings.ApiKey);
+                    var members = await apiService.GetMembersAsync(chamber, propublicaSettings.ApiKey);
 
-                    var result = members.Results?.FirstOrDefault().Members?.FirstOrDefault(m => m.TwitterAccount == userName);
+                    var result = members.Results?.FirstOrDefault().Members?.FirstOrDefault(m =>
+                            m.FirstName == name.Split(' ').First() && m.LastName == name.Split(' ').Skip(1).First());
 
                     if (result != null)
-                    {
+                    {                    
                         return result;
                     }
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-
+                Log.Error(ex, "Error getting member by name");
                 throw;
             }
 
-            return new Member();
+
+            Log.Information("Member not found {Name}");
+            return null;
         }
 
         public async Task<RecentVotes> GetRecentVotesAsync(string chamber)
@@ -88,12 +95,12 @@ namespace VotingTrackRecordClasses
 
     public interface IPropublicaApi
     {
-        [Get("{congress}/{chamber}/members.json")]
-        Task<MemberRoot> GetMembersAsync(string congress, string chamber, [Header("X-API-KEY")] string apiKey);
-        
+        [Get("/{chamber}/members.json")]
+        Task<MemberRoot> GetMembersAsync(string chamber, [Header("X-API-KEY")] string apiKey);
+
         [Get("/{chamber}/votes/recent.json")]
         Task<RecentVotes> GetRecentVotesAsync(string chamber, [Header("X-API-KEY")] string apiKey);
-        
+
         [Get("/bills/search.json?query={query}")]
         Task<BillSearch> SearchBills(string query, [Header("X-API-KEY")] string apiKey);
     }

@@ -20,6 +20,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\PropublicaApi\PropublicaService.csproj" />
+    <ProjectReference Include="..\Repository\Repository.csproj" />
     <ProjectReference Include="..\TwitterBusiness\TwitterService.csproj" />
     <ProjectReference Include="..\VoteTrackerBusiness\VoteTracker.csproj" />
     <ProjectReference Include="..\VotingTrackRecord.Common\VotingTrackRecord.Common.csproj" />
