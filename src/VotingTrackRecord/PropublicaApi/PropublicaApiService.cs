@@ -11,7 +11,7 @@ namespace VotingTrackRecordClasses
 {
     public interface IPropublicaApiService
     {
-        Task<RecentVotes> GetRecentVotesAsync(string chamber);
+        Task<RecentVotesRoot> GetRecentVotesAsync(string chamber);
         Task<BillSearch> SeachBills(string query);
         Task<Member> GetMemberByNameAsync(string userName, string name);
     }
@@ -59,7 +59,7 @@ namespace VotingTrackRecordClasses
             return null;
         }
 
-        public async Task<RecentVotes> GetRecentVotesAsync(string chamber)
+        public async Task<RecentVotesRoot> GetRecentVotesAsync(string chamber)
         {
             var apiService = RestService.For<IPropublicaApi>(propublicaSettings.Url);
             try
@@ -100,7 +100,7 @@ namespace VotingTrackRecordClasses
         Task<MemberRoot> GetMembersAsync(string chamber, [Header("X-API-KEY")] string apiKey);
 
         [Get("/{chamber}/votes/recent.json")]
-        Task<RecentVotes> GetRecentVotesAsync(string chamber, [Header("X-API-KEY")] string apiKey);
+        Task<RecentVotesRoot> GetRecentVotesAsync(string chamber, [Header("X-API-KEY")] string apiKey);
 
         [Get("/bills/search.json?query={query}")]
         Task<BillSearch> SearchBills(string query, [Header("X-API-KEY")] string apiKey);
