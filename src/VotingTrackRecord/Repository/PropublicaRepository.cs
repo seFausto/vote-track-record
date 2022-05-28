@@ -7,6 +7,7 @@ using System.Security.Authentication;
 using System.Text.Json;
 using VotingTrackRecord.Common.PropublicaApiClasses;
 using VotingTrackRecord.Common.Settings;
+using VotingTrackRecordClasses;
 
 namespace Repository
 {
@@ -14,6 +15,8 @@ namespace Repository
     {
         Task AddMemberAsync(string userName, string json);
         Task<Member?> GetMemberAsync(string userName);
+        Task<Vote?> GetVoteRecordAsync(string uri);
+        Task AddVoteRecordAsync(string uri, object value);
     }
 
     public class PropublicaRepository : IPropublicaRepository
@@ -78,6 +81,16 @@ namespace Repository
                  .GetCollection<BsonDocument>(databaseSettings.MemberCollectionName)
                  .InsertOneAsync(bsonDocument);
 
+        }
+
+        public Task<Vote?> GetVoteRecordAsync(string uri)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task AddVoteRecordAsync(string uri, object value)
+        {
+            throw new NotImplementedException();
         }
     }
 }

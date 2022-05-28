@@ -14,22 +14,31 @@ namespace VotingTrackRecordClasses
         Task<RecentVotesRoot> GetRecentVotesAsync(string chamber);
         Task<BillSearchRoot> SeachBills(string query);
         Task<Member> GetMemberByNameAsync(string userName, string name);
+        Task<Vote> GetVoteRecordAsync(string uri);
     }
 
     public class PropublicaApiService : IPropublicaApiService
     {
         private readonly PropublicaSettings propublicaSettings;
-        private readonly IPropublicaRepository propublicaRepository;
 
-        public PropublicaApiService(IOptions<PropublicaSettings> options, IPropublicaRepository propublicaRepository)
+
+        public PropublicaApiService(IOptions<PropublicaSettings> options)
         {
-            this.propublicaRepository = propublicaRepository;
             propublicaSettings = options.Value;
+        }
+
+        public static string Combine(string uri1, string uri2)
+        {
+            uri1 = uri1.TrimEnd('/');
+            uri2 = uri2.TrimStart('/');
+            return string.Format("{0}/{1}", uri1, uri2);
         }
 
         public async Task<Member> GetMemberByNameAsync(string userName, string name)
         {
-            var apiService = RestService.For<IPropublicaApi>(propublicaSettings.Url);
+
+
+            var apiService = RestService.For<IPropublicaApi>(Combine(propublicaSettings.Url, propublicaSettings.Congress));
             var chambers = new List<string>() { "house", "senate" };
 
             try
@@ -54,7 +63,6 @@ namespace VotingTrackRecordClasses
                 throw;
             }
 
-
             Log.Information("Member not found {Name}");
             return null;
         }
@@ -76,9 +84,14 @@ namespace VotingTrackRecordClasses
 
         }
 
+        public Task<Vote> GetVoteRecordAsync(string uri)
+        {
+            throw new NotImplementedException();
+        }
+
         public async Task<BillSearchRoot> SeachBills(string query)
         {
-            var apiService = RestService.For<IPropublicaApi>(propublicaSettings.Url);
+            var apiService = RestService.For<IPropublicaApi>(Combine(propublicaSettings.Url, propublicaSettings.Congress));
             try
             {
                 var result = await apiService.SearchBills(query, propublicaSettings.ApiKey);

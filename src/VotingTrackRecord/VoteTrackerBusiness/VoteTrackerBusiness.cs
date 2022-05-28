@@ -4,12 +4,13 @@ using VotingTrackRecordClasses;
 using System.Text.Json;
 using VotingTrackRecord.Common.PropublicaApiClasses;
 using Serilog;
+using System.Linq;
 
 namespace VoteTracker
 {
     public interface IPropublicaBusiness
     {
-        Task<VotesHistory?> GetVotesHistoryAsync(Member name, IEnumerable<string> keywords);
+        Task<string> GetVotesHistoryAsync(Member name, IEnumerable<string> keywords);
 
         Task ProcessTweet(string userName, string firstName, string lastnName, string tweetText);
     }
@@ -28,7 +29,7 @@ namespace VoteTracker
         public async Task ProcessTweet(string userName, string firstName, string lastnName, string tweetText)
 
         {
-            var member = await GetPropublicaMemberInformation(userName, firstName);
+            var member = await GetPropublicaMemberInformationAsync(userName, firstName);
 
             var keywords = await GetKeywords(tweetText);
 
@@ -39,10 +40,10 @@ namespace VoteTracker
 
         private async Task<IEnumerable<string>> GetKeywords(string tweetText)
         {
-            return new List<string> { "veteran", "gun" };
+            return new List<string> { "fuel", "gun" };
         }
 
-        private async Task<Member> GetPropublicaMemberInformation(string userName, string name)
+        private async Task<Member> GetPropublicaMemberInformationAsync(string userName, string name)
         {
             Log.Information("Getting member information for {userName} from mongodb", userName);
             var member = await propublicaRepository.GetMemberAsync(userName);
@@ -62,17 +63,31 @@ namespace VoteTracker
         }
 
 
-        public async Task<VotesHistory?> GetVotesHistoryAsync(Member member, IEnumerable<string> keywords)
+        public async Task<string> GetVotesHistoryAsync(Member member, IEnumerable<string> keywords)
         {
+            Log.Information("Getting recent votes for chamber {Chamber}", member.Chamber);
+
             var recentVotes = await propublicaApiService.GetRecentVotesAsync(member.Chamber);
 
-            var results = await propublicaApiService.SeachBills(keywords.First());
+            Log.Information("Parsing descriptions for keywords {Keywords} to get Vote Uris", keywords);
 
+            var relatedVoteUris = (recentVotes.Results.Votes.Where(item => item.Description
+                            .Contains(keywords.First(), StringComparison.InvariantCultureIgnoreCase)))
+                            .Select(x => x.VoteUri)
+                            .ToList();
+
+            foreach (var uri in relatedVoteUris)
+            {
+                var votes = await GetPropublicaVoteRecordAsync(uri, member);
+            }
+            
             return null;
         }
-    }
 
-    public class VotesHistory
-    {
+        private async Task<IEnumerable<Vote>> GetPropublicaVoteRecordAsync(string uri, Member member)
+        {
+            return null;
+        }
+
     }
 }

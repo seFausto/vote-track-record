@@ -31,7 +31,7 @@ namespace VotingTrackRecordClasses
     {
         [JsonPropertyName("chamber")]
         public string Chamber { get; set; }
-
+       
         [JsonPropertyName("offset")]
         public int Offset { get; set; }
 
