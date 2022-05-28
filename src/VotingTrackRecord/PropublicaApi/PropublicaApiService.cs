@@ -42,7 +42,8 @@ namespace VotingTrackRecordClasses
                             m.FirstName == name.Split(' ').First() && m.LastName == name.Split(' ').Skip(1).First());
 
                     if (result != null)
-                    {                    
+                    {
+                        result.Chamber = members.Results?.FirstOrDefault().Chamber;
                         return result;
                     }
                 }

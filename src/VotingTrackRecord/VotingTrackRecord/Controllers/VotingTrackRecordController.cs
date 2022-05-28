@@ -13,13 +13,5 @@ namespace VotingTrackRecord.Controllers
         {
             this.voteTrackerBusiness = voteTrackerBusiness;
         }
-
-        [HttpGet("GetVotes")]
-        public async Task<ObjectResult> GetVotesForKeywords(string name, string tweetText)
-        {
-            var result = await voteTrackerBusiness.GetVotesHistoryAsync(name, new List<string> { tweetText });
-
-            return Ok(result);
-        }
     }
 }

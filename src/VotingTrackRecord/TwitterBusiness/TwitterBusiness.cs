@@ -7,7 +7,7 @@ namespace TwitterService
 {
     public interface ITwitterBusiness
     {
-        Task GetTweets();
+        Task GetTweetsAsync();
     }
 
     internal class FriendIdTweetTime
@@ -35,10 +35,11 @@ namespace TwitterService
 
             this.voteTrackerBusiness = voteTrackerBusiness;
 
-            SetFriendIds();
+            Task.Run(() => SetFriendIdsAsync()).Wait();
+            
         }
 
-        private void SetFriendIds()
+        private async Task SetFriendIdsAsync()
         {
             if (friendIdsLastTweet is not null)
                 return;
@@ -48,9 +49,9 @@ namespace TwitterService
             var userClient = new TwitterClient(twitterSettings.ApiKey,
                 twitterSettings.ApiKeySecret, twitterSettings.AccessToken, twitterSettings.AccessTokenSecret);
 
-            var friendsIds = userClient.Users.GetFriendIdsAsync(twitterSettings.UserId).Result;
+            var friendsIds = await userClient.Users.GetFriendIdsAsync(twitterSettings.UserId);
 
-            foreach (var friendId in friendsIds)
+            foreach (var friendId in friendsIds.Take(1))
             {
                 friendIdsLastTweet.Add(new FriendIdTweetTime
                 {
@@ -61,7 +62,7 @@ namespace TwitterService
             }
         }
 
-        public async Task GetTweets()
+        public async Task GetTweetsAsync()
         {
             if (friendIdsLastTweet is null)
                 return;

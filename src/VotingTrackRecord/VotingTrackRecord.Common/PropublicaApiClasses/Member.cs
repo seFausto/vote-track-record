@@ -147,7 +147,10 @@ namespace VotingTrackRecord.Common.PropublicaApiClasses
 
         [JsonPropertyName("votes_against_party_pct")]
         public double VotesAgainstPartyPct { get; set; }
+
+        public string Chamber { get; set; }
     }
+    
 
     public class Result
     {

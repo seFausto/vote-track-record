@@ -9,7 +9,7 @@ namespace VoteTracker
 {
     public interface IPropublicaBusiness
     {
-        Task<VotesHistory> GetVotesHistoryAsync(string name, IEnumerable<string> keywords);
+        Task<VotesHistory?> GetVotesHistoryAsync(Member name, IEnumerable<string> keywords);
 
         Task ProcessTweet(string userName, string firstName, string lastnName, string tweetText);
     }
@@ -18,21 +18,21 @@ namespace VoteTracker
     {
         private readonly IPropublicaApiService propublicaApiService;
         private readonly IPropublicaRepository propublicaRepository;
-        
+
         public PropublicaBusiness(IPropublicaApiService propublicaService, IPropublicaRepository propublicaRepository)
         {
             this.propublicaApiService = propublicaService;
-            this.propublicaRepository = propublicaRepository; 
+            this.propublicaRepository = propublicaRepository;
         }
 
         public async Task ProcessTweet(string userName, string firstName, string lastnName, string tweetText)
 
         {
             var member = await GetPropublicaMemberInformation(userName, firstName);
-            
+
             var keywords = await GetKeywords(tweetText);
 
-            //var votesHistory = await GetVotesHistoryAsync(officialName, keywords);
+            var votesHistory = await GetVotesHistoryAsync(member, keywords);
 
             //await votingTrackRecordRepository.SaveVotesHistoryAsync(votesHistory);
         }
@@ -44,18 +44,17 @@ namespace VoteTracker
 
         private async Task<Member> GetPropublicaMemberInformation(string userName, string name)
         {
-            //check db first if nothing then call api, then save to db
             Log.Information("Getting member information for {userName} from mongodb", userName);
             var member = await propublicaRepository.GetMemberAsync(userName);
-            
+
             if (member is null)
             {
                 Log.Information("UserName {userName} not found in mongo, getting from api", userName);
-                
+
                 member = await propublicaApiService.GetMemberByNameAsync(userName, name);
-                
+
                 Log.Information("UserName {userName} member information begin saved to mongodb", userName);
-                
+
                 await propublicaRepository.AddMemberAsync(userName, JsonSerializer.Serialize(member));
             }
 
@@ -63,8 +62,10 @@ namespace VoteTracker
         }
 
 
-        public async Task<VotesHistory> GetVotesHistoryAsync(string name, IEnumerable<string> keywords)
+        public async Task<VotesHistory?> GetVotesHistoryAsync(Member member, IEnumerable<string> keywords)
         {
+            var recentVotes = await propublicaApiService.GetRecentVotesAsync(member.Chamber);
+
             var results = await propublicaApiService.SeachBills(keywords.First());
 
             return null;

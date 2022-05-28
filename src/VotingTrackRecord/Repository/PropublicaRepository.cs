@@ -13,7 +13,7 @@ namespace Repository
     public interface IPropublicaRepository
     {
         Task AddMemberAsync(string userName, string json);
-        Task<Member> GetMemberAsync(string userName);
+        Task<Member?> GetMemberAsync(string userName);
     }
 
     public class PropublicaRepository : IPropublicaRepository
