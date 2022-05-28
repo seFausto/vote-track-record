@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using VotingTrackRecordClasses;
 using System.Text.Json;
 using VotingTrackRecord.Common.PropublicaApiClasses;
+using Serilog;
 
 namespace VoteTracker
 {
@@ -28,7 +29,7 @@ namespace VoteTracker
 
         {
             var member = await GetPropublicaMemberInformation(userName, firstName);
-
+            
             var keywords = await GetKeywords(tweetText);
 
             //var votesHistory = await GetVotesHistoryAsync(officialName, keywords);
@@ -44,11 +45,17 @@ namespace VoteTracker
         private async Task<Member> GetPropublicaMemberInformation(string userName, string name)
         {
             //check db first if nothing then call api, then save to db
+            Log.Information("Getting member information for {userName} from mongodb", userName);
             var member = await propublicaRepository.GetMemberAsync(userName);
+            
             if (member is null)
             {
+                Log.Information("UserName {userName} not found in mongo, getting from api", userName);
+                
                 member = await propublicaApiService.GetMemberByNameAsync(userName, name);
-
+                
+                Log.Information("UserName {userName} member information begin saved to mongodb", userName);
+                
                 await propublicaRepository.AddMemberAsync(userName, JsonSerializer.Serialize(member));
             }
 

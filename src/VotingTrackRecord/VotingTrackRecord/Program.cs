@@ -44,6 +44,7 @@ namespace VotingTrackRecord
             Log.Logger = new LoggerConfiguration()
                 .MinimumLevel.Debug()
                 .Enrich.FromLogContext()
+                .WriteTo.Console()
                 .WriteTo.Http(builder.Configuration["ApplicationSettings:LoggingHttpEndpoint"].ToString(), 1000)
                 .CreateLogger();
 
