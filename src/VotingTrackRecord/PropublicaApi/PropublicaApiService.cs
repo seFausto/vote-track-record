@@ -36,8 +36,6 @@ namespace VotingTrackRecordClasses
 
         public async Task<Member> GetMemberByNameAsync(string userName, string name)
         {
-
-
             var apiService = RestService.For<IPropublicaApi>(Combine(propublicaSettings.Url, propublicaSettings.Congress));
             var chambers = new List<string>() { "house", "senate" };
 
@@ -84,11 +82,6 @@ namespace VotingTrackRecordClasses
 
         }
 
-        public Task<Vote> GetVoteRecordAsync(string uri)
-        {
-            throw new NotImplementedException();
-        }
-
         public async Task<BillSearchRoot> SeachBills(string query)
         {
             var apiService = RestService.For<IPropublicaApi>(Combine(propublicaSettings.Url, propublicaSettings.Congress));
@@ -104,6 +97,11 @@ namespace VotingTrackRecordClasses
                 throw;
             }
 
+        }
+
+        public Task<Vote> GetVoteRecordAsync(string uri)
+        {
+            throw new NotImplementedException();
         }
     }
 

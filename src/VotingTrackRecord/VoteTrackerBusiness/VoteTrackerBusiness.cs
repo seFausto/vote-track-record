@@ -86,6 +86,21 @@ namespace VoteTracker
 
         private async Task<IEnumerable<Vote>> GetPropublicaVoteRecordAsync(string uri, Member member)
         {
+            Log.Information("Getting vote record for uri {Uri} from mongodb", uri);
+
+            var voteRecord = await propublicaRepository.GetVoteRecordAsync(uri);
+
+            if (voteRecord is null)
+            {
+                Log.Information("Vote record for uri {Uri} not found in mongo, getting from api", uri);
+
+                voteRecord = await propublicaApiService.GetVoteRecordAsync(uri);
+
+                Log.Information("Vote record for uri {Uri} begin saved to mongodb", uri);
+
+                await propublicaRepository.AddVoteRecordAsync(uri, JsonSerializer.Serialize(voteRecord));
+            }
+
             return null;
         }
 
