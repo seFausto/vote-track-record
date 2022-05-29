@@ -76,12 +76,21 @@ namespace VoteTracker
                             .Select(x => x.VoteUri)
                             .ToList();
 
+            var votes = new List<VoteRoot>();
             foreach (var uri in relatedVoteUris)
             {
-                var votes = await GetPropublicaVoteRecordAsync(uri, member);
+                votes.Add(await GetPropublicaVoteRecordAsync(uri, member));
             }
-            
-            return null;
+
+            var result = string.Empty;
+            foreach (var item in votes)
+            {
+                var votesByMember = item?.Results?.Votes?.Vote?.Positions?.SingleOrDefault(x => x.MemberId == member.Id);
+                result += $"On {item?.Results.Votes.Vote.Bill.ShortTitle} you voted {votesByMember?.VotePosition}\n";
+
+            }
+
+            return result;
         }
 
         private async Task<VoteRoot> GetPropublicaVoteRecordAsync(string uri, Member member)
