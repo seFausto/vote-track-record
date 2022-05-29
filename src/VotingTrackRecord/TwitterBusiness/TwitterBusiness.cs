@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Options;
+using Serilog;
 using Tweetinvi;
 using Tweetinvi.Parameters;
 using VoteTracker;
@@ -86,21 +87,24 @@ namespace TwitterService
                 if (latestTweet.CreatedAt > item.LastTweet)
                 {
                     item.LastTweet = latestTweet.CreatedAt;
+                    Log.Debug("Tweet from {ScreenName}: {TweetText}", latestTweet.CreatedBy.ScreenName, latestTweet.FullText);
                     
-                    await voteTrackerBusiness.ProcessTweet(latestTweet.CreatedBy.ScreenName, latestTweet.CreatedBy.Name,
+                    var messages = await voteTrackerBusiness.GetReplyMessage(latestTweet.CreatedBy.ScreenName, latestTweet.CreatedBy.Name,
                         latestTweet.FullText);
 
-                    Console.WriteLine($"{latestTweet.CreatedBy} -  {latestTweet.Text}");
+                    Log.Information("Messages: {@Messages}", messages);
+
+                    await ReplyToUsersTweetAsync(latestTweet, messages);
                 }
             }
         }
 
-        public async Task ReplyToUsersTweetAsync(long tweetId, string message)
+        public async Task ReplyToUsersTweetAsync(Tweetinvi.Models.ITweet? tweet, IEnumerable<string> messages)
         {
             var userClient = new TwitterClient(twitterSettings.ApiKey, twitterSettings.ApiKeySecret,
                 twitterSettings.AccessToken, twitterSettings.AccessTokenSecret);
 
-            var tweet = await userClient.Tweets.GetTweetAsync(tweetId);
+            var message = string.Join("\n", messages);
 
             var reply = await userClient.Tweets.PublishTweetAsync(new PublishTweetParameters(message)
             {
