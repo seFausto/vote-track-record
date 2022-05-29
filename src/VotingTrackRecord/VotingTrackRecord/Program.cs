@@ -32,6 +32,7 @@ namespace VotingTrackRecord
             var twitterSettings = builder.Configuration.GetSection("TwitterSettings");
             builder.Services.Configure<TwitterSettings>(twitterSettings);
 
+            builder.Services.AddSingleton<IWordListRepository, WordListRepository>();
 
             builder.Services.AddSingleton<IPropublicaRepository, PropublicaRepository>();
             builder.Services.AddSingleton<IPropublicaApiService, PropublicaApiService>();
