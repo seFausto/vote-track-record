@@ -40,7 +40,7 @@ namespace VoteTracker
 
         private async Task<IEnumerable<string>> GetKeywords(string tweetText)
         {
-            return new List<string> { "fuel", "gun" };
+            return new List<string> { "fuel" };
         }
 
         private async Task<Member> GetPropublicaMemberInformationAsync(string userName, string name)
@@ -86,8 +86,7 @@ namespace VoteTracker
             foreach (var item in votes)
             {
                 var votesByMember = item?.Results?.Votes?.Vote?.Positions?.SingleOrDefault(x => x.MemberId == member.Id);
-                result += $"On {item?.Results.Votes.Vote.Bill.ShortTitle} you voted {votesByMember?.VotePosition}\n";
-
+                result += $"On Bill {item?.Results.Votes.Vote.Bill.Number} - {item?.Results.Votes.Vote.Bill.ShortTitle} you voted {votesByMember?.VotePosition}\n";
             }
 
             return result;
