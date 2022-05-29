@@ -84,7 +84,7 @@ namespace VoteTracker
             return null;
         }
 
-        private async Task<IEnumerable<Vote>> GetPropublicaVoteRecordAsync(string uri, Member member)
+        private async Task<VoteRoot> GetPropublicaVoteRecordAsync(string uri, Member member)
         {
             Log.Information("Getting vote record for uri {Uri} from mongodb", uri);
 
@@ -101,7 +101,7 @@ namespace VoteTracker
                 await propublicaRepository.AddVoteRecordAsync(uri, JsonSerializer.Serialize(voteRecord));
             }
 
-            return null;
+            return voteRecord;
         }
 
     }

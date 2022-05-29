@@ -13,10 +13,10 @@ namespace Repository
 {
     public interface IPropublicaRepository
     {
-        Task AddMemberAsync(string userName, string json);
         Task<Member?> GetMemberAsync(string userName);
-        Task<Vote?> GetVoteRecordAsync(string uri);
-        Task AddVoteRecordAsync(string uri, object value);
+        Task AddMemberAsync(string userName, string json);
+        Task<VoteRoot?> GetVoteRecordAsync(string uri);
+        Task AddVoteRecordAsync(string uri, string value);
     }
 
     public class PropublicaRepository : IPropublicaRepository
@@ -45,7 +45,7 @@ namespace Repository
 
                 if (result == null)
                     return null;
-                
+
                 var data = result.GetValue("Data");
                 return JsonSerializer.Deserialize<Member>(data.AsString);
             }
@@ -54,13 +54,12 @@ namespace Repository
                 Log.Error(ex, "Error getting member from database");
                 throw;
             }
-
         }
 
         public async Task AddMemberAsync(string userName, string json)
         {
 
-            MongoClientSettings settings = MongoClientSettings.FromUrl(
+            var settings = MongoClientSettings.FromUrl(
               new MongoUrl(databaseSettings.ConnectionString));
 
             settings.SslSettings = new SslSettings() { EnabledSslProtocols = SslProtocols.Tls12 };
@@ -74,23 +73,61 @@ namespace Repository
                     Data = json
                 }.ToJson());
 
-
-
-
             await mongoClient.GetDatabase(databaseSettings.DatabaseName)
                  .GetCollection<BsonDocument>(databaseSettings.MemberCollectionName)
                  .InsertOneAsync(bsonDocument);
 
         }
 
-        public Task<Vote?> GetVoteRecordAsync(string uri)
+        public async Task<VoteRoot?> GetVoteRecordAsync(string uri)
         {
-            throw new NotImplementedException();
+            MongoClientSettings settings = MongoClientSettings.FromUrl(
+                 new MongoUrl(databaseSettings.ConnectionString));
+
+            settings.SslSettings = new SslSettings() { EnabledSslProtocols = SslProtocols.Tls12 };
+
+            var mongoClient = new MongoClient(settings);
+
+            try
+            {
+                var result = await mongoClient.GetDatabase(databaseSettings.DatabaseName)
+                    .GetCollection<BsonDocument>(databaseSettings.UrlCollectionName)
+                    .Find(new BsonDocument("Url", uri))
+                    .FirstOrDefaultAsync<BsonDocument>();
+
+                if (result == null)
+                    return null;
+
+                var data = result.GetValue("Data");
+                return JsonSerializer.Deserialize<VoteRoot>(data.AsString);
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "Error getting Vote root from database: {uri}", uri);
+                throw;
+            }
         }
 
-        public Task AddVoteRecordAsync(string uri, object value)
+        public async Task AddVoteRecordAsync(string uri, string json)
         {
-            throw new NotImplementedException();
+            var settings = MongoClientSettings.FromUrl(
+             new MongoUrl(databaseSettings.ConnectionString));
+
+            settings.SslSettings = new SslSettings() { EnabledSslProtocols = SslProtocols.Tls12 };
+
+            var mongoClient = new MongoClient(settings);
+
+            BsonDocument bsonDocument = BsonDocument.Parse(
+                new
+                {
+                    Url = uri,
+                    Data = json
+                }.ToJson());
+
+            await mongoClient.GetDatabase(databaseSettings.DatabaseName)
+                 .GetCollection<BsonDocument>(databaseSettings.UrlCollectionName)
+                 .InsertOneAsync(bsonDocument);
+
         }
     }
 }

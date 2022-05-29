@@ -14,7 +14,7 @@ namespace VotingTrackRecordClasses
         Task<RecentVotesRoot> GetRecentVotesAsync(string chamber);
         Task<BillSearchRoot> SeachBills(string query);
         Task<Member> GetMemberByNameAsync(string userName, string name);
-        Task<Vote> GetVoteRecordAsync(string uri);
+        Task<VoteRoot> GetVoteRecordAsync(string uri);
     }
 
     public class PropublicaApiService : IPropublicaApiService
@@ -99,9 +99,20 @@ namespace VotingTrackRecordClasses
 
         }
 
-        public Task<Vote> GetVoteRecordAsync(string uri)
+        public async Task<VoteRoot> GetVoteRecordAsync(string uri)
         {
-            throw new NotImplementedException();
+            var apiService = RestService.For<IPropublicaApi>(uri);
+            try
+            {
+                var result = await apiService.GetVoteRecordAsync(propublicaSettings.ApiKey);
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "Error in Search bills");
+                throw;
+            }
         }
     }
 
@@ -115,6 +126,9 @@ namespace VotingTrackRecordClasses
 
         [Get("/bills/search.json?query={query}")]
         Task<BillSearchRoot> SearchBills(string query, [Header("X-API-KEY")] string apiKey);
+
+        [Get("/")]
+        Task<VoteRoot> GetVoteRecordAsync([Header("X-API-KEY")] string apiKey);
     }
 
 
