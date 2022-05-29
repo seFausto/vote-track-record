@@ -104,13 +104,12 @@ namespace TwitterService
             var userClient = new TwitterClient(twitterSettings.ApiKey, twitterSettings.ApiKeySecret,
                 twitterSettings.AccessToken, twitterSettings.AccessTokenSecret);
 
-            var message = string.Join("\n", messages);
+            var message = string.Join("\n", messages.Take(3));
 
-            var reply = await userClient.Tweets.PublishTweetAsync(new PublishTweetParameters(message)
+            _ = await userClient.Tweets.PublishTweetAsync(new PublishTweetParameters(message)
             {
                 InReplyToTweet = tweet
             });
-
         }
     }
 }
