@@ -10,7 +10,7 @@ namespace VoteTracker
 {
     public interface IPropublicaBusiness
     {
-        Task<string> GetVotesHistoryAsync(Member name, IEnumerable<WordReference> keywords);
+        Task<IEnumerable<string>> GetVotesHistoryAsync(Member name, IEnumerable<WordReference> keywords);
 
         Task ProcessTweet(string userName, string firstName, string lastnName, string tweetText);
     }
@@ -35,7 +35,7 @@ namespace VoteTracker
             var member = await GetPropublicaMemberInformationAsync(userName, firstName);
 
             var keywords = await GetKeywords(tweetText);
-
+            
             var votesHistory = await GetVotesHistoryAsync(member, keywords);
 
             //await votingTrackRecordRepository.SaveVotesHistoryAsync(votesHistory);
@@ -70,7 +70,7 @@ namespace VoteTracker
         }
 
 
-        public async Task<string> GetVotesHistoryAsync(Member member, IEnumerable<WordReference> keywords)
+        public async Task<IEnumerable<string>> GetVotesHistoryAsync(Member member, IEnumerable<WordReference> keywords)
         {
             Log.Information("Getting recent votes for chamber {Chamber}", member.Chamber);
 
@@ -85,23 +85,32 @@ namespace VoteTracker
                             .Select(x => x.VoteUri)
                             .ToList();
 
-            var votes = new List<VoteRoot>();
+            var voteRoots = new List<VoteRoot>();
             foreach (var uri in relatedVoteUris)
             {
-                votes.Add(await GetPropublicaVoteRecordAsync(uri, member));
+                voteRoots.Add(await GetPropublicaVoteRecordAsync(uri));
             }
 
-            var result = string.Empty;
-            foreach (var item in votes)
+            var result = new List<string>();
+            foreach (var item in voteRoots)
             {
-                var votesByMember = item?.Results?.Votes?.Vote?.Positions?.SingleOrDefault(x => x.MemberId == member.Id);
-                result += $"On Bill {item?.Results.Votes.Vote.Bill.Number} - {item?.Results.Votes.Vote.Bill.ShortTitle} you voted {votesByMember?.VotePosition}\n";
+                var memberPositions = item.Results.Votes.Vote.Positions.SingleOrDefault(x => x.MemberId == member.Id);
+
+                if (memberPositions is null)
+                    continue;
+
+                var billIdTitle = $"{item.Results.Votes.Vote.Bill.BillId} - {item.Results.Votes.Vote.Bill.Title}";
+
+                result.Add($"You Voted {memberPositions.VotePosition.ToUpper()} on {billIdTitle} \n");
             }
+
+
+            result.ForEach(x => Log.Debug(x));
 
             return result;
         }
 
-        private async Task<VoteRoot> GetPropublicaVoteRecordAsync(string uri, Member member)
+        private async Task<VoteRoot> GetPropublicaVoteRecordAsync(string uri)
         {
             Log.Information("Getting vote record for uri {Uri} from mongodb", uri);
 
