@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Options;
 using Tweetinvi;
+using Tweetinvi.Parameters;
 using VoteTracker;
 using VotingTrackRecord.Common.Settings;
 
@@ -86,12 +87,26 @@ namespace TwitterService
                 {
                     item.LastTweet = latestTweet.CreatedAt;
                     
-                    await voteTrackerBusiness.ProcessTweet(latestTweet.CreatedBy.ScreenName, latestTweet.CreatedBy.Name, 
-                        latestTweet.CreatedBy.Name, latestTweet.FullText);
+                    await voteTrackerBusiness.ProcessTweet(latestTweet.CreatedBy.ScreenName, latestTweet.CreatedBy.Name,
+                        latestTweet.FullText);
 
                     Console.WriteLine($"{latestTweet.CreatedBy} -  {latestTweet.Text}");
                 }
             }
+        }
+
+        public async Task ReplyToUsersTweetAsync(long tweetId, string message)
+        {
+            var userClient = new TwitterClient(twitterSettings.ApiKey, twitterSettings.ApiKeySecret,
+                twitterSettings.AccessToken, twitterSettings.AccessTokenSecret);
+
+            var tweet = await userClient.Tweets.GetTweetAsync(tweetId);
+
+            var reply = await userClient.Tweets.PublishTweetAsync(new PublishTweetParameters(message)
+            {
+                InReplyToTweet = tweet
+            });
+
         }
     }
 }

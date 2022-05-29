@@ -10,9 +10,9 @@ namespace VoteTracker
 {
     public interface IPropublicaBusiness
     {
-        Task<IEnumerable<string>> GetVotesHistoryAsync(Member name, IEnumerable<WordReference> keywords);
+        Task<IEnumerable<string>> GetLatestRelatedVotesMessage(Member name, IEnumerable<WordReference> keywords);
 
-        Task ProcessTweet(string userName, string firstName, string lastnName, string tweetText);
+        Task ProcessTweet(string userName, string name, string tweetText);
     }
 
     public class PropublicaBusiness : IPropublicaBusiness
@@ -29,16 +29,16 @@ namespace VoteTracker
             this.wordListRepository = wordListRepository;
         }
 
-        public async Task ProcessTweet(string userName, string firstName, string lastnName, string tweetText)
+        public async Task ProcessTweet(string userName, string name, string tweetText)
 
         {
-            var member = await GetPropublicaMemberInformationAsync(userName, firstName);
+            var member = await GetPropublicaMemberInformationAsync(userName, name);
 
             var keywords = await GetKeywords(tweetText);
             
-            var votesHistory = await GetVotesHistoryAsync(member, keywords);
+            var voteMessages = await GetLatestRelatedVotesMessage(member, keywords);
 
-            //await votingTrackRecordRepository.SaveVotesHistoryAsync(votesHistory);
+            //Tweet back to user
         }
 
         private async Task<IEnumerable<WordReference>> GetKeywords(string tweetText)
@@ -70,7 +70,7 @@ namespace VoteTracker
         }
 
 
-        public async Task<IEnumerable<string>> GetVotesHistoryAsync(Member member, IEnumerable<WordReference> keywords)
+        public async Task<IEnumerable<string>> GetLatestRelatedVotesMessage(Member member, IEnumerable<WordReference> keywords)
         {
             Log.Information("Getting recent votes for chamber {Chamber}", member.Chamber);
 
