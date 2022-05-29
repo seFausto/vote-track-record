@@ -1,18 +1,18 @@
 ﻿{
-	"wordList": [
-		{
-			"word": "gender",
-			"related": [ "sex", "" ]
-		},
-		{
-			"word": "gun",
-			"related": [ "weapon", "ar-15", "pistol", "second amendment", "2A" ]
-		},
-		{
-			"word": "fuel",
-			"related": [ "gas", "gasoline", "fossil fuels", "fuel" ]
-		}
+  "wordList" : [
+    {
+      "word": "gender",
+      "related": [ "sex", "homo", "roe v wade" ]
+    },
+    {
+      "word": "gun",
+      "related": [ "weapon", "ar-15", "pistol", "second amendment", "2A" ]
+    },
+    {
+      "word": "fuel",
+      "related": [ "gas", "gasoline", "fossil fuels", "fuel" ]
+    }
 
-	]
+  ]
 
 }

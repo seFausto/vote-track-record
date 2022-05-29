@@ -12,7 +12,7 @@ namespace Repository
 {
     public interface IWordListRepository
     {
-        Task<IEnumerable<WordReference>> GetWordReferences();
+        Task<WordList> GetWordReferences();
     }
 
     public class WordListRepository : IWordListRepository
@@ -24,26 +24,26 @@ namespace Repository
             this.databaseSettings = databaseSettings.Value;
         }
 
-        public async Task<IEnumerable<WordReference>> GetWordReferences()
+        public async Task<WordList> GetWordReferences()
         {
             var assembly = Assembly.GetExecutingAssembly();
             string resourceName = assembly.GetManifestResourceNames().Single(str => str.EndsWith("WordList.json"));
 
             if (string.IsNullOrEmpty(resourceName))
-                return new List<WordReference>();
+                return new WordList();
 
             using Stream? stream = assembly.GetManifestResourceStream(resourceName);
 
             if (stream == null)
-                return new List<WordReference>();
+                return new WordList();
 
             using StreamReader reader = new(stream);
 
             string result = await reader.ReadToEndAsync();
 
-            var wordReference = JsonSerializer.Deserialize<List<WordReference>>(result);
+            var wordReference = JsonSerializer.Deserialize<WordList>(result);
 
-            return wordReference ?? new List<WordReference>();
+            return wordReference ?? new WordList();
 
 
         }

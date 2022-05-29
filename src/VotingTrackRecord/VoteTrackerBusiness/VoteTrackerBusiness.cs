@@ -10,7 +10,7 @@ namespace VoteTracker
 {
     public interface IPropublicaBusiness
     {
-        Task<string> GetVotesHistoryAsync(Member name, IEnumerable<string> keywords);
+        Task<string> GetVotesHistoryAsync(Member name, IEnumerable<WordReference> keywords);
 
         Task ProcessTweet(string userName, string firstName, string lastnName, string tweetText);
     }
@@ -19,11 +19,14 @@ namespace VoteTracker
     {
         private readonly IPropublicaApiService propublicaApiService;
         private readonly IPropublicaRepository propublicaRepository;
+        private readonly IWordListRepository wordListRepository;
 
-        public PropublicaBusiness(IPropublicaApiService propublicaService, IPropublicaRepository propublicaRepository)
+        public PropublicaBusiness(IPropublicaApiService propublicaService, IPropublicaRepository propublicaRepository,
+            IWordListRepository wordListRepository)
         {
             this.propublicaApiService = propublicaService;
             this.propublicaRepository = propublicaRepository;
+            this.wordListRepository = wordListRepository;
         }
 
         public async Task ProcessTweet(string userName, string firstName, string lastnName, string tweetText)
@@ -38,9 +41,13 @@ namespace VoteTracker
             //await votingTrackRecordRepository.SaveVotesHistoryAsync(votesHistory);
         }
 
-        private async Task<IEnumerable<string>> GetKeywords(string tweetText)
+        private async Task<IEnumerable<WordReference>> GetKeywords(string tweetText)
         {
-            return new List<string> { "fuel" };
+            var wordReferences = await wordListRepository.GetWordReferences();
+            return wordReferences?.WordReferences?.Where(item =>
+                        item.Related.Any(x =>
+                            tweetText.ToLowerInvariant().Contains(x))).ToList() ?? new List<WordReference>();
+
         }
 
         private async Task<Member> GetPropublicaMemberInformationAsync(string userName, string name)
@@ -63,7 +70,7 @@ namespace VoteTracker
         }
 
 
-        public async Task<string> GetVotesHistoryAsync(Member member, IEnumerable<string> keywords)
+        public async Task<string> GetVotesHistoryAsync(Member member, IEnumerable<WordReference> keywords)
         {
             Log.Information("Getting recent votes for chamber {Chamber}", member.Chamber);
 
@@ -71,8 +78,10 @@ namespace VoteTracker
 
             Log.Information("Parsing descriptions for keywords {Keywords} to get Vote Uris", keywords);
 
+            var keyword = keywords?.FirstOrDefault()?.Word ?? string.Empty;
+
             var relatedVoteUris = (recentVotes.Results.Votes.Where(item => item.Description
-                            .Contains(keywords.First(), StringComparison.InvariantCultureIgnoreCase)))
+                            .Contains(keyword, StringComparison.InvariantCultureIgnoreCase)))
                             .Select(x => x.VoteUri)
                             .ToList();
 
