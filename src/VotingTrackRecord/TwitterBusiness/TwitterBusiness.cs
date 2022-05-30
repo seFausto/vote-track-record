@@ -120,10 +120,20 @@ namespace TwitterService
             foreach (var item in messages)
             {
                 var message = $"@{tweet.CreatedBy} {item}";
-                _ = await userClient.Tweets.PublishTweetAsync(new PublishTweetParameters(message)
+
+                try
                 {
-                    InReplyToTweet = tweet
-                });
+                    _ = await userClient.Tweets.PublishTweetAsync(new PublishTweetParameters(message)
+                    {
+                        InReplyToTweet = tweet
+                    });
+                }
+                catch (Exception ex)
+                {
+                    Log.Error(ex, "Error replying to tweet");
+                    throw;
+                }
+                
             }            
         }
     }
