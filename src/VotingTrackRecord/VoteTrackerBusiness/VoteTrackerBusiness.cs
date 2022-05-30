@@ -32,14 +32,15 @@ namespace VoteTracker
         {
             var member = await GetPropublicaMemberInformationAsync(userName, name);
 
-            var keywords = await GetKeywords(tweetText);
+            var keywords = await GetKeywordsAsync(tweetText);
 
-            return await GetLatestRelatedVotesMessage(member, keywords);
+            return await GetLatestRelatedVotesMessageAsync(member, keywords);
         }
 
-        private async Task<IEnumerable<WordReference>> GetKeywords(string tweetText)
+        private async Task<IEnumerable<WordReference>> GetKeywordsAsync(string tweetText)
         {
             var wordReferences = await wordListRepository.GetWordReferences();
+            
             return wordReferences?.WordReferences?.Where(item =>
                         item.Related.Any(x =>
                             tweetText.ToLowerInvariant().Contains(x))).ToList() ?? new List<WordReference>();
@@ -66,20 +67,24 @@ namespace VoteTracker
         }
 
 
-        private async Task<IEnumerable<string>> GetLatestRelatedVotesMessage(Member member, IEnumerable<WordReference> keywords)
+        private async Task<IEnumerable<string>> GetLatestRelatedVotesMessageAsync(Member member, IEnumerable<WordReference> keywords)
         {
             Log.Information("Getting recent votes for chamber {Chamber}", member.Chamber);
 
             var recentVotes = await propublicaApiService.GetRecentVotesAsync(member.Chamber);
 
-            Log.Information("Parsing descriptions for keywords {Keywords} to get Vote Uris", keywords);
+            Log.Information("Parsing descriptions for keywords {Keywords} to get Vote Uris", keywords.Select(x => x.Word));
 
-            var keyword = keywords?.FirstOrDefault()?.Word ?? string.Empty;
+            var relatedVoteUris = new List<string>();
 
-            var relatedVoteUris = (recentVotes.Results.Votes.Where(item => item.Description
-                            .Contains(keyword, StringComparison.InvariantCultureIgnoreCase)))
+            foreach (var wordReference in keywords)
+            {
+                relatedVoteUris.AddRange(recentVotes.Results.Votes.Where(item =>
+                            wordReference.Related.Any(x => item.Description.Contains(x, StringComparison.CurrentCultureIgnoreCase)))
                             .Select(x => x.VoteUri)
-                            .ToList();
+                            .ToList());
+            }
+
 
             var voteRoots = new List<VoteRoot>();
             foreach (var uri in relatedVoteUris)

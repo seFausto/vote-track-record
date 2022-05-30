@@ -72,30 +72,31 @@ namespace TwitterService
             var userClient = new TwitterClient(twitterSettings.ApiKey, twitterSettings.ApiKeySecret,
                 twitterSettings.AccessToken, twitterSettings.AccessTokenSecret);
 
-
             foreach (var item in friendIdsLastTweet.OrderBy(x => x.LastCheck).Take(BatchSize))
             {
                 item.LastCheck = DateTimeOffset.Now;
-
+                
                 var tweets = await userClient.Timelines.GetUserTimelineAsync(item.FriendId);
+                
 
-                var latestTweet = tweets?.FirstOrDefault();
-
-                if (latestTweet is null)
-                    continue;
-
-                if (latestTweet.CreatedAt > item.LastTweet)
+                foreach (var tweet in tweets.OrderBy(x=>x.CreatedAt))
                 {
-                    item.LastTweet = latestTweet.CreatedAt;
-                    Log.Debug("Tweet from {ScreenName}: {TweetText}", latestTweet.CreatedBy.ScreenName, latestTweet.FullText);
-                    
-                    var messages = await voteTrackerBusiness.GetReplyMessage(latestTweet.CreatedBy.ScreenName, latestTweet.CreatedBy.Name,
-                        latestTweet.FullText);
+                    if (tweet.CreatedAt > item.LastTweet)
+                    {
+                        item.LastTweet = tweet.CreatedAt;
+                        Log.Debug("Tweet from {ScreenName}: {TweetText}", tweet.CreatedBy.ScreenName, tweet.FullText);
 
-                    Log.Information("Messages: {@Messages}", messages);
+                        var messages = await voteTrackerBusiness.GetReplyMessage(tweet.CreatedBy.ScreenName, tweet.CreatedBy.Name,
+                            tweet.FullText);
 
-                    await ReplyToUsersTweetAsync(latestTweet, messages);
+                        Log.Information("Messages: {@Messages}", messages);
+
+                        if (messages?.Any()?? false)                        
+                            await ReplyToUsersTweetAsync(tweet, messages);
+                    }
+
                 }
+                
             }
         }
 
@@ -106,10 +107,10 @@ namespace TwitterService
 
             var message = string.Join("\n", messages.Take(3));
 
-            _ = await userClient.Tweets.PublishTweetAsync(new PublishTweetParameters(message)
-            {
-                InReplyToTweet = tweet
-            });
+            //_ = await userClient.Tweets.PublishTweetAsync(new PublishTweetParameters(message)
+            //{
+            //    InReplyToTweet = tweet
+            //});
         }
     }
 }
