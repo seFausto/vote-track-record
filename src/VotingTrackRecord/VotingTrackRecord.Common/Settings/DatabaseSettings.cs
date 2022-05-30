@@ -12,5 +12,6 @@ namespace VotingTrackRecord.Common.Settings
         public string DatabaseName { get; set; } = string.Empty;
         public string UrlCollectionName { get; set; } = string.Empty;
         public string MemberCollectionName { get; set; } = string.Empty;
+        public string TweetCollectionName { get; set; } = string.Empty;
     }
 }

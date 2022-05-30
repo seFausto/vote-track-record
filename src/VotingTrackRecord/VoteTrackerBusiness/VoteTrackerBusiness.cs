@@ -5,6 +5,8 @@ using System.Text.Json;
 using VotingTrackRecord.Common.PropublicaApiClasses;
 using Serilog;
 using System.Linq;
+using Microsoft.Extensions.Options;
+using VotingTrackRecord.Common.Settings;
 
 namespace VoteTracker
 {
@@ -18,19 +20,28 @@ namespace VoteTracker
         private readonly IPropublicaApiService propublicaApiService;
         private readonly IPropublicaRepository propublicaRepository;
         private readonly IWordListRepository wordListRepository;
+        private readonly PropublicaSettings propublicaSettings;
 
-        public PropublicaBusiness(IPropublicaApiService propublicaService, IPropublicaRepository propublicaRepository,
-            IWordListRepository wordListRepository)
+        public PropublicaBusiness(IOptions<PropublicaSettings> settings, IPropublicaApiService propublicaService,
+            IPropublicaRepository propublicaRepository, IWordListRepository wordListRepository)
         {
             this.propublicaApiService = propublicaService;
             this.propublicaRepository = propublicaRepository;
             this.wordListRepository = wordListRepository;
+
+            propublicaSettings = settings.Value;
         }
 
         public async Task<IEnumerable<string>> GetReplyMessage(string userName, string name, string tweetText)
 
         {
             var member = await GetPropublicaMemberInformationAsync(userName, name);
+
+            if (member == null)
+            {
+                Log.Error("Propublica member not found: {UserName}, {Name}", userName, name);
+                return new List<string>();
+            }
 
             var keywords = await GetKeywordsAsync(tweetText);
 
@@ -40,7 +51,7 @@ namespace VoteTracker
         private async Task<IEnumerable<WordReference>> GetKeywordsAsync(string tweetText)
         {
             var wordReferences = await wordListRepository.GetWordReferences();
-            
+
             return wordReferences?.WordReferences?.Where(item =>
                         item.Related.Any(x =>
                             tweetText.ToLowerInvariant().Contains(x))).ToList() ?? new List<WordReference>();
@@ -106,9 +117,11 @@ namespace VoteTracker
                 if (memberPositions is null)
                     continue;
 
-                var billIdTitle = $"{item.Results.Votes.Vote.Question} for {item.Results.Votes.Vote.Bill.BillId}: {item.Results.Votes.Vote.Bill.Title}";
+                var chamber = member.Chamber == "House" ? "h" : "s";
+                var billIdTitle = $"{item.Results.Votes.Vote.Question} for {item.Results.Votes.Vote.Bill.BillId}: {item.Results.Votes.Vote.Bill.Title}" +
+                    $" Link: {propublicaSettings.GovTrackUrl}/{chamber}{item.Results.Votes.Vote.RollCall}";
 
-                result.Add($"You Voted {memberPositions.VotePosition.ToUpper()} {billIdTitle}");
+                result.Add($"You voted {memberPositions.VotePosition.ToUpper()} {billIdTitle}");
             }
 
             result.ForEach(x => Log.Debug(x));

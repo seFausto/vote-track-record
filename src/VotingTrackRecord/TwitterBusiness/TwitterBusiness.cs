@@ -1,5 +1,7 @@
 ﻿using Microsoft.Extensions.Options;
+using Repository;
 using Serilog;
+using System.Text.Json;
 using Tweetinvi;
 using Tweetinvi.Parameters;
 using VoteTracker;
@@ -28,14 +30,19 @@ namespace TwitterService
 
         private readonly IPropublicaBusiness voteTrackerBusiness;
 
+        private readonly IPropublicaRepository propublicaRepository;
+
         private static List<FriendIdTweetTime>? friendIdsLastTweet = null;
 
 
-        public TwitterBusiness(IOptions<TwitterSettings> options, IPropublicaBusiness voteTrackerBusiness)
+        public TwitterBusiness(IOptions<TwitterSettings> options, IPropublicaBusiness voteTrackerBusiness,
+            IPropublicaRepository propublicaRepository)
         {
             this.twitterSettings = options.Value;
 
             this.voteTrackerBusiness = voteTrackerBusiness;
+
+            this.propublicaRepository = propublicaRepository;
 
             Task.Run(() => SetFriendIdsAsync()).Wait();
 
@@ -78,9 +85,14 @@ namespace TwitterService
 
                 var tweets = await userClient.Timelines.GetUserTimelineAsync(item.FriendId);
 
-
                 foreach (var tweet in tweets.OrderBy(x => x.CreatedAt))
                 {
+                    if (tweet is null)
+                        continue;
+                    
+                    if (await propublicaRepository.HasAlreadyBeenTweeted(tweet.Id))
+                        continue;
+
                     if (tweet.CreatedAt > item.LastTweet)
                     {
                         item.LastTweet = tweet.CreatedAt;
@@ -90,25 +102,29 @@ namespace TwitterService
                             tweet.FullText);
 
                         if (messages?.Any() ?? false)
+                        {
                             await ReplyToUsersTweetAsync(tweet, messages);
+                        }
+
+                        await propublicaRepository.AddTweetAsync(tweet.Id, JsonSerializer.Serialize(messages));
                     }
-
                 }
-
             }
         }
 
-        public async Task ReplyToUsersTweetAsync(Tweetinvi.Models.ITweet? tweet, IEnumerable<string> messages)
+        public async Task ReplyToUsersTweetAsync(Tweetinvi.Models.ITweet tweet, IEnumerable<string> messages)
         {
             var userClient = new TwitterClient(twitterSettings.ApiKey, twitterSettings.ApiKeySecret,
                 twitterSettings.AccessToken, twitterSettings.AccessTokenSecret);
 
-            var message = string.Join("\n", messages.Take(3));
-
-            //_ = await userClient.Tweets.PublishTweetAsync(new PublishTweetParameters(message)
-            //{
-            //    InReplyToTweet = tweet
-            //});
+            foreach (var item in messages)
+            {
+                var message = $"@{tweet.CreatedBy} {item}";
+                _ = await userClient.Tweets.PublishTweetAsync(new PublishTweetParameters(message)
+                {
+                    InReplyToTweet = tweet
+                });
+            }            
         }
     }
 }
