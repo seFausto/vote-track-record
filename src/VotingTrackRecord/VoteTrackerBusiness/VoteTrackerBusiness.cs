@@ -118,8 +118,8 @@ namespace VoteTracker
                     continue;
 
                 var chamber = member.Chamber == "House" ? "h" : "s";
-                var billIdTitle = $"{item.Results.Votes.Vote.Question} for {item.Results.Votes.Vote.Bill.BillId}: {item.Results.Votes.Vote.Bill.Title}" +
-                    $" Link: {propublicaSettings.GovTrackUrl}/{chamber}{item.Results.Votes.Vote.RollCall}";
+                var billIdTitle = $"{item.Results.Votes.Vote.Question} for {item.Results.Votes.Vote.Bill.BillId}: {item.Results.Votes.Vote.Bill.Title} " +
+                    $"{propublicaSettings.GovTrackUrl}/{chamber}{item.Results.Votes.Vote.RollCall}";
 
                 result.Add($"You voted {memberPositions.VotePosition.ToUpper()} {billIdTitle}");
             }
