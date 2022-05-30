@@ -65,7 +65,7 @@ namespace TwitterService
                 friendIdsLastTweet.Add(new FriendIdTweetTime
                 {
                     FriendId = friendId,
-                    LastTweet = DateTimeOffset.MinValue,
+                    LastTweet = DateTimeOffset.Now.AddDays(-30),
                     LastCheck = DateTimeOffset.MinValue
                 });
             }
