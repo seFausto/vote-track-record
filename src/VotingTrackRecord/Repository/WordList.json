@@ -1,18 +1,21 @@
 ﻿{
-  "wordList" : [
+  "wordList": [
     {
       "word": "gender",
-      "related": [ "sex", "homo", "roe v wade" ]
+      "related": [ "sexuality", "homo" ]
     },
     {
       "word": "gun",
-      "related": [ "weapon", "ar-15", "pistol", "second amendment", "2A", "children", "safe" ]
+      "related": [ "weapon", "ar-15", "pistol", "second amendment", "2A", "gun", "school shooting" ]
     },
     {
       "word": "fuel",
       "related": [ "gas", "gasoline", "fossil fuels", "fuel" ]
+    },
+    {
+      "word": "abortion",
+      "related": [ "womb", "abortion", "unborn life", "unborn lives" ]
     }
-
   ]
 
 }

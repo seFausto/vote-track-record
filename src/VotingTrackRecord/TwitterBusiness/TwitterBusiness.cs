@@ -38,7 +38,7 @@ namespace TwitterService
             this.voteTrackerBusiness = voteTrackerBusiness;
 
             Task.Run(() => SetFriendIdsAsync()).Wait();
-            
+
         }
 
         private async Task SetFriendIdsAsync()
@@ -75,11 +75,11 @@ namespace TwitterService
             foreach (var item in friendIdsLastTweet.OrderBy(x => x.LastCheck).Take(BatchSize))
             {
                 item.LastCheck = DateTimeOffset.Now;
-                
-                var tweets = await userClient.Timelines.GetUserTimelineAsync(item.FriendId);
-                
 
-                foreach (var tweet in tweets.OrderBy(x=>x.CreatedAt))
+                var tweets = await userClient.Timelines.GetUserTimelineAsync(item.FriendId);
+
+
+                foreach (var tweet in tweets.OrderBy(x => x.CreatedAt))
                 {
                     if (tweet.CreatedAt > item.LastTweet)
                     {
@@ -89,14 +89,12 @@ namespace TwitterService
                         var messages = await voteTrackerBusiness.GetReplyMessage(tweet.CreatedBy.ScreenName, tweet.CreatedBy.Name,
                             tweet.FullText);
 
-                        Log.Information("Messages: {@Messages}", messages);
-
-                        if (messages?.Any()?? false)                        
+                        if (messages?.Any() ?? false)
                             await ReplyToUsersTweetAsync(tweet, messages);
                     }
 
                 }
-                
+
             }
         }
 

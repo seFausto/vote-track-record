@@ -100,9 +100,9 @@ namespace VoteTracker
                 if (memberPositions is null)
                     continue;
 
-                var billIdTitle = $"{item.Results.Votes.Vote.Bill.Title} - {item.Results.Votes.Vote.Bill.BillId}";
+                var billIdTitle = $"{item.Results.Votes.Vote.Question} for {item.Results.Votes.Vote.Bill.BillId}: {item.Results.Votes.Vote.Bill.Title}";
 
-                result.Add($"You Voted {memberPositions.VotePosition.ToUpper()} on {billIdTitle} \n");
+                result.Add($"You Voted {memberPositions.VotePosition.ToUpper()} {billIdTitle}");
             }
 
             result.ForEach(x => Log.Debug(x));
