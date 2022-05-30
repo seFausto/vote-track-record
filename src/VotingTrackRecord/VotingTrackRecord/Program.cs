@@ -36,7 +36,7 @@ namespace VotingTrackRecord
 
             builder.Services.AddSingleton<IPropublicaRepository, PropublicaRepository>();
             builder.Services.AddSingleton<IPropublicaApiService, PropublicaApiService>();
-          
+
             builder.Services.AddSingleton<IPropublicaBusiness, PropublicaBusiness>();
             builder.Services.AddSingleton<ITwitterBusiness, TwitterBusiness>();
 
@@ -86,19 +86,18 @@ namespace VotingTrackRecord
                     }
                 }
             });
-            var business = app.Services.GetRequiredService<ITwitterBusiness>();
 
-            business.GetTweetsAsync();
-           // RecurringJob.AddOrUpdate("Get Latest Tweets", () => business.GetTweets(), Cron.Minutely);  // "*/15 * * * *");
+            var business = app.Services.GetRequiredService<ITwitterBusiness>();
+            RecurringJob.AddOrUpdate("Get Latest Tweets", () => business.GetTweetsAsync(), "*/15 * * * *");
 
             app.UseHttpsRedirection();
 
             app.UseAuthorization();
 
             app.MapControllers();
-            
+
             app.MapHangfireDashboard();
-            
+
             app.Run();
         }
     }

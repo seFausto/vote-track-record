@@ -60,7 +60,7 @@ namespace TwitterService
 
             var friendsIds = await userClient.Users.GetFriendIdsAsync(twitterSettings.UserId);
 
-            foreach (var friendId in friendsIds.Take(1))
+            foreach (var friendId in friendsIds)
             {
                 friendIdsLastTweet.Add(new FriendIdTweetTime
                 {
