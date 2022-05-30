@@ -47,7 +47,7 @@ namespace VoteTracker
 
         }
 
-        private async Task<Member> GetPropublicaMemberInformationAsync(string userName, string name)
+        private async Task<Member?> GetPropublicaMemberInformationAsync(string userName, string name)
         {
             Log.Information("Getting member information for {userName} from mongodb", userName);
             var member = await propublicaRepository.GetMemberAsync(userName);
@@ -57,6 +57,12 @@ namespace VoteTracker
                 Log.Information("UserName {userName} not found in mongo, getting from api", userName);
 
                 member = await propublicaApiService.GetMemberByNameAsync(userName, name);
+
+                if (member is null)
+                {
+                    Log.Error("UserName {userName} not found in api", userName);
+                    return null;
+                }
 
                 Log.Information("UserName {userName} member information begin saved to mongodb", userName);
 

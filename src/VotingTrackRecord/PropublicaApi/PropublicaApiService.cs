@@ -5,7 +5,7 @@ using Serilog;
 using VotingTrackRecord.Common.Settings;
 using VotingTrackRecord.Common.PropublicaApiClasses;
 using Repository;
-
+using System.Text.RegularExpressions;
 
 namespace VotingTrackRecordClasses
 {
@@ -38,7 +38,7 @@ namespace VotingTrackRecordClasses
         {
             var apiService = RestService.For<IPropublicaApi>(Combine(propublicaSettings.Url, propublicaSettings.Congress));
             var chambers = new List<string>() { "house", "senate" };
-
+            name = CleanupName(name);
             try
             {
                 foreach (var chamber in chambers)
@@ -46,7 +46,7 @@ namespace VotingTrackRecordClasses
                     var members = await apiService.GetMembersAsync(chamber, propublicaSettings.ApiKey);
 
                     var result = members.Results?.FirstOrDefault().Members?.FirstOrDefault(m =>
-                            m.FirstName == name.Split(' ').First() && m.LastName == name.Split(' ').Skip(1).First());
+                            m.FirstName == name.Split(' ').First() && m.LastName == name.Split(' ').Last());
 
                     if (result != null)
                     {
@@ -63,6 +63,14 @@ namespace VotingTrackRecordClasses
 
             Log.Information("Member not found {Name}");
             return null;
+        }
+
+        private static string CleanupName(string name)
+        {
+            name = name.Replace("Rep.", string.Empty).Replace("Sen.", string.Empty);
+            name = Regex.Replace(name, @"[^\u0000-\u007F]+", string.Empty);
+            name = name.Trim();
+            return name;
         }
 
         public async Task<RecentVotesRoot> GetRecentVotesAsync(string chamber)
