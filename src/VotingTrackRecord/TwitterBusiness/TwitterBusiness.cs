@@ -65,7 +65,7 @@ namespace TwitterService
                 friendIdsLastTweet.Add(new FriendIdTweetTime
                 {
                     FriendId = friendId,
-                    LastTweet = DateTimeOffset.Now.AddDays(-30),
+                    LastTweet = DateTimeOffset.Now.AddDays(-1),
                     LastCheck = DateTimeOffset.MinValue
                 });
             }
@@ -85,11 +85,13 @@ namespace TwitterService
 
                 var tweets = await userClient.Timelines.GetUserTimelineAsync(item.FriendId);
 
-                foreach (var tweet in tweets.OrderBy(x => x.CreatedAt))
+                foreach (var tweet in tweets
+                                        .Where(x => x.CreatedAt > item.LastTweet)
+                                        .OrderBy(x => x.CreatedAt))
                 {
                     if (tweet is null)
                         continue;
-                    
+
                     if (await propublicaRepository.HasAlreadyBeenTweeted(tweet.Id))
                         continue;
 
@@ -133,8 +135,8 @@ namespace TwitterService
                     Log.Error(ex, "Error replying to tweet");
                     throw;
                 }
-                
-            }            
+
+            }
         }
     }
 }
