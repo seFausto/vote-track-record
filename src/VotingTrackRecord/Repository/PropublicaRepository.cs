@@ -24,6 +24,7 @@ namespace Repository
     public class PropublicaRepository : IPropublicaRepository
     {
         private readonly DatabaseSettings databaseSettings;
+        
         public PropublicaRepository(IOptions<DatabaseSettings> settings)
         {
             databaseSettings = settings.Value;
@@ -31,7 +32,7 @@ namespace Repository
 
         public async Task<Member?> GetMemberAsync(string userName)
         {
-            MongoClientSettings settings = MongoClientSettings.FromUrl(
+            var settings = MongoClientSettings.FromUrl(
                   new MongoUrl(databaseSettings.ConnectionString));
 
             settings.SslSettings = new SslSettings() { EnabledSslProtocols = SslProtocols.Tls12 };
@@ -83,7 +84,7 @@ namespace Repository
 
         public async Task<VoteRoot?> GetVoteRecordAsync(string uri)
         {
-            MongoClientSettings settings = MongoClientSettings.FromUrl(
+            var settings = MongoClientSettings.FromUrl(
                  new MongoUrl(databaseSettings.ConnectionString));
 
             settings.SslSettings = new SslSettings() { EnabledSslProtocols = SslProtocols.Tls12 };
@@ -118,8 +119,8 @@ namespace Repository
             settings.SslSettings = new SslSettings() { EnabledSslProtocols = SslProtocols.Tls12 };
 
             var mongoClient = new MongoClient(settings);
-
-            BsonDocument bsonDocument = BsonDocument.Parse(
+            
+            var bsonDocument = BsonDocument.Parse(
                 new
                 {
                     Url = uri,
@@ -141,7 +142,7 @@ namespace Repository
 
             var mongoClient = new MongoClient(settings);
 
-            BsonDocument bsonDocument = BsonDocument.Parse(
+            var bsonDocument = BsonDocument.Parse(
                 new
                 {
                     TweetId = tweetId,
@@ -155,7 +156,7 @@ namespace Repository
 
         public async Task<bool> HasAlreadyBeenTweeted(long tweetId)
         {
-            MongoClientSettings settings = MongoClientSettings.FromUrl(
+            var settings = MongoClientSettings.FromUrl(
                 new MongoUrl(databaseSettings.ConnectionString));
 
             settings.SslSettings = new SslSettings() { EnabledSslProtocols = SslProtocols.Tls12 };
@@ -164,12 +165,10 @@ namespace Repository
 
             try
             {
-                var result = await mongoClient.GetDatabase(databaseSettings.DatabaseName)
+                return await mongoClient.GetDatabase(databaseSettings.DatabaseName)
                     .GetCollection<BsonDocument>(databaseSettings.TweetCollectionName)
                     .Find(new BsonDocument("TweetId", tweetId))
                     .AnyAsync();
-
-                return result;
             }
             catch (Exception ex)
             {
