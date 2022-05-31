@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Options;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization;
 using MongoDB.Driver;
@@ -32,16 +32,9 @@ namespace Repository
 
         public async Task<Member?> GetMemberAsync(string userName)
         {
-            var settings = MongoClientSettings.FromUrl(
-                  new MongoUrl(databaseSettings.ConnectionString));
-
-            settings.SslSettings = new SslSettings() { EnabledSslProtocols = SslProtocols.Tls12 };
-
-            var mongoClient = new MongoClient(settings);
-
             try
             {
-                var result = await mongoClient.GetDatabase(databaseSettings.DatabaseName)
+                var result = await GetMongoDb()
                     .GetCollection<BsonDocument>(databaseSettings.MemberCollectionName)
                     .Find(new BsonDocument("UserName", userName))
                     .FirstOrDefaultAsync<BsonDocument>();
@@ -61,14 +54,6 @@ namespace Repository
 
         public async Task AddMemberAsync(string userName, string json)
         {
-
-            var settings = MongoClientSettings.FromUrl(
-              new MongoUrl(databaseSettings.ConnectionString));
-
-            settings.SslSettings = new SslSettings() { EnabledSslProtocols = SslProtocols.Tls12 };
-
-            var mongoClient = new MongoClient(settings);
-
             BsonDocument bsonDocument = BsonDocument.Parse(
                 new
                 {
@@ -76,7 +61,7 @@ namespace Repository
                     Data = json
                 }.ToJson());
 
-            await mongoClient.GetDatabase(databaseSettings.DatabaseName)
+            await GetMongoDb()
                  .GetCollection<BsonDocument>(databaseSettings.MemberCollectionName)
                  .InsertOneAsync(bsonDocument);
 
@@ -84,16 +69,9 @@ namespace Repository
 
         public async Task<VoteRoot?> GetVoteRecordAsync(string uri)
         {
-            var settings = MongoClientSettings.FromUrl(
-                 new MongoUrl(databaseSettings.ConnectionString));
-
-            settings.SslSettings = new SslSettings() { EnabledSslProtocols = SslProtocols.Tls12 };
-
-            var mongoClient = new MongoClient(settings);
-
             try
             {
-                var result = await mongoClient.GetDatabase(databaseSettings.DatabaseName)
+                var result = await GetMongoDb()
                     .GetCollection<BsonDocument>(databaseSettings.UrlCollectionName)
                     .Find(new BsonDocument("Url", uri))
                     .FirstOrDefaultAsync<BsonDocument>();
@@ -113,13 +91,6 @@ namespace Repository
 
         public async Task AddVoteRecordAsync(string uri, string json)
         {
-            var settings = MongoClientSettings.FromUrl(
-                new MongoUrl(databaseSettings.ConnectionString));
-
-            settings.SslSettings = new SslSettings() { EnabledSslProtocols = SslProtocols.Tls12 };
-
-            var mongoClient = new MongoClient(settings);
-            
             var bsonDocument = BsonDocument.Parse(
                 new
                 {
@@ -127,7 +98,7 @@ namespace Repository
                     Data = json
                 }.ToJson());
 
-            await mongoClient.GetDatabase(databaseSettings.DatabaseName)
+            await GetMongoDb()
                  .GetCollection<BsonDocument>(databaseSettings.UrlCollectionName)
                  .InsertOneAsync(bsonDocument);
 
@@ -135,13 +106,6 @@ namespace Repository
 
         public async Task AddTweetAsync(long tweetId, string json)
         {
-            var settings = MongoClientSettings.FromUrl(
-                   new MongoUrl(databaseSettings.ConnectionString));
-
-            settings.SslSettings = new SslSettings() { EnabledSslProtocols = SslProtocols.Tls12 };
-
-            var mongoClient = new MongoClient(settings);
-
             var bsonDocument = BsonDocument.Parse(
                 new
                 {
@@ -149,23 +113,17 @@ namespace Repository
                     Data = json
                 }.ToJson());
 
-            await mongoClient.GetDatabase(databaseSettings.DatabaseName)
+            await GetMongoDb()
                  .GetCollection<BsonDocument>(databaseSettings.TweetCollectionName)
                  .InsertOneAsync(bsonDocument);
         }
 
         public async Task<bool> HasAlreadyBeenTweeted(long tweetId)
         {
-            var settings = MongoClientSettings.FromUrl(
-                new MongoUrl(databaseSettings.ConnectionString));
-
-            settings.SslSettings = new SslSettings() { EnabledSslProtocols = SslProtocols.Tls12 };
-
-            var mongoClient = new MongoClient(settings);
 
             try
             {
-                return await mongoClient.GetDatabase(databaseSettings.DatabaseName)
+                return await GetMongoDb()
                     .GetCollection<BsonDocument>(databaseSettings.TweetCollectionName)
                     .Find(new BsonDocument("TweetId", tweetId))
                     .AnyAsync();
@@ -175,6 +133,21 @@ namespace Repository
                 Log.Error(ex, "Error getting tweet from database: {TweetId}", tweetId);
                 throw;
             }
+        }
+
+        private IMongoDatabase GetMongoDb()
+        {
+            return GetMongoClient().GetDatabase(databaseSettings.DatabaseName)
+        }
+
+        private IMongoClient GetMongoClient()
+        {
+            var settings = MongoClientSettings.FromUrl(
+                new MongoUrl(databaseSettings.ConnectionString));
+
+            settings.SslSettings = new SslSettings() { EnabledSslProtocols = SslProtocols.Tls12 };
+
+            return MongoClient(settings);
         }
     }
 }
