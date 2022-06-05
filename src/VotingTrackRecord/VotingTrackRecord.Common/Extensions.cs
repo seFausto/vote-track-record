@@ -1,7 +1,7 @@
 using System;
 
 namespace Extensions
-(
+{ 
     public static class ClassExtensions
     {
         /// <summary>
@@ -24,9 +24,9 @@ namespace Extensions
         /// </summary>
         /// <param name="collection">The collection to check</param>
         /// <returns>True if the collection is not null and has at least 1 item</returns>
-        public static bool HasItems<T>(this Enumerable<T>) collection)
+        public static bool HasItems<T>(this IEnumerable<T> collection)
         {
             return collection != null && collection.Any();
         }
     }
-)
+}

@@ -100,8 +100,16 @@ namespace TwitterService
                         item.LastTweet = tweet.CreatedAt;
                         Log.Debug("Tweet from {ScreenName}: {TweetText}", tweet.CreatedBy.ScreenName, tweet.FullText);
 
-                        var messages = await voteTrackerBusiness.GetReplyMessage(tweet.CreatedBy.ScreenName, tweet.CreatedBy.Name,
-                            tweet.FullText);
+                        var member = await voteTrackerBusiness.GetPropublicaMemberInformationAsync(tweet.CreatedBy.ScreenName, tweet.CreatedBy.Name);
+                        
+                        if (member == null)
+                        {
+                            Log.Error("Propublica member not found: {UserName}, {Name}", tweet.CreatedBy.ScreenName, tweet.CreatedBy.Name);
+                            return;
+                        }
+                        
+                        var messages = await voteTrackerBusiness.GetReplyMessage(tweet.CreatedBy.ScreenName,
+                            tweet.CreatedBy.Name, tweet.FullText, member);
 
                         if (messages?.Any() ?? false)
                         {

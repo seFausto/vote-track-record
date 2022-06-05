@@ -120,7 +120,6 @@ namespace Repository
 
         public async Task<bool> HasAlreadyBeenTweeted(long tweetId)
         {
-
             try
             {
                 return await GetMongoDb()
@@ -137,7 +136,7 @@ namespace Repository
 
         private IMongoDatabase GetMongoDb()
         {
-            return GetMongoClient().GetDatabase(databaseSettings.DatabaseName)
+            return GetMongoClient().GetDatabase(databaseSettings.DatabaseName);
         }
 
         private IMongoClient GetMongoClient()
@@ -147,7 +146,7 @@ namespace Repository
 
             settings.SslSettings = new SslSettings() { EnabledSslProtocols = SslProtocols.Tls12 };
 
-            return MongoClient(settings);
+            return new MongoClient(settings);
         }
     }
 }

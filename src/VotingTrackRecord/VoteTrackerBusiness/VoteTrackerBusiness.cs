@@ -12,7 +12,8 @@ namespace VoteTracker
 {
     public interface IPropublicaBusiness
     {
-        Task<IEnumerable<string>> GetReplyMessage(string userName, string name, string tweetText);
+        Task<IEnumerable<string>> GetReplyMessage(string userName, string name, string tweetText, Member member);
+        Task<Member?> GetPropublicaMemberInformationAsync(string userName, string name);
     }
 
     public class PropublicaBusiness : IPropublicaBusiness
@@ -32,17 +33,8 @@ namespace VoteTracker
             propublicaSettings = settings.Value;
         }
 
-        public async Task<IEnumerable<string>> GetReplyMessage(string userName, string name, string tweetText)
-
+        public async Task<IEnumerable<string>> GetReplyMessage(string userName, string name, string tweetText, Member member)
         {
-            var member = await GetPropublicaMemberInformationAsync(userName, name);
-
-            if (member == null)
-            {
-                Log.Error("Propublica member not found: {UserName}, {Name}", userName, name);
-                return new List<string>();
-            }
-
             var keywords = await GetKeywordsAsync(tweetText);
 
             return await GetLatestRelatedVotesMessageAsync(member, keywords);
@@ -58,7 +50,7 @@ namespace VoteTracker
 
         }
 
-        private async Task<Member?> GetPropublicaMemberInformationAsync(string userName, string name)
+        public async Task<Member?> GetPropublicaMemberInformationAsync(string userName, string name)
         {
             Log.Information("Getting member information for {userName} from mongodb", userName);
             var member = await propublicaRepository.GetMemberAsync(userName);
