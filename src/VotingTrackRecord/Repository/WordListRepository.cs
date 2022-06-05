@@ -16,12 +16,9 @@ namespace Repository
     }
 
     public class WordListRepository : IWordListRepository
-    {
-        private readonly DatabaseSettings databaseSettings;
-
-        public WordListRepository(IOptions<DatabaseSettings> databaseSettings)
-        {
-            this.databaseSettings = databaseSettings.Value;
+    {   
+        public WordListRepository()
+        {  
         }
 
         public async Task<WordList> GetWordReferences()
@@ -44,8 +41,6 @@ namespace Repository
             var wordReference = JsonSerializer.Deserialize<WordList>(result);
 
             return wordReference ?? new WordList();
-
-
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Options;
+﻿using Extensions;
+using Microsoft.Extensions.Options;
 using Repository;
 using Serilog;
 using System.Text.Json;
@@ -111,7 +112,7 @@ namespace TwitterService
                         var messages = await voteTrackerBusiness.GetReplyMessage(tweet.CreatedBy.ScreenName,
                             tweet.CreatedBy.Name, tweet.FullText, member);
 
-                        if (messages?.Any() ?? false)
+                        if (messages.HasItems())
                         {
                             await ReplyToUsersTweetAsync(tweet, messages);
                         }

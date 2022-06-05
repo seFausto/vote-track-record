@@ -47,7 +47,6 @@ namespace VoteTracker
             return wordReferences?.WordReferences?.Where(item =>
                         item.Related.Any(x =>
                             tweetText.ToLowerInvariant().Contains(x))).ToList() ?? new List<WordReference>();
-
         }
 
         public async Task<Member?> GetPropublicaMemberInformationAsync(string userName, string name)
