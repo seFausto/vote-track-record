@@ -16,15 +16,16 @@ namespace Repository
     }
 
     public class WordListRepository : IWordListRepository
-    {   
+    {
         public WordListRepository()
-        {  
+        {
         }
 
         public async Task<WordList> GetWordReferences()
         {
             var assembly = Assembly.GetExecutingAssembly();
-            string resourceName = assembly.GetManifestResourceNames().Single(str => str.EndsWith("WordList.json"));
+            string resourceName = assembly.GetManifestResourceNames()
+                .Single(str => str.EndsWith("WordList.json"));
 
             if (string.IsNullOrEmpty(resourceName))
                 return new WordList();

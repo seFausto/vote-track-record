@@ -6,6 +6,7 @@ using VotingTrackRecord.Common.Settings;
 using VotingTrackRecord.Common.PropublicaApiClasses;
 using Repository;
 using System.Text.RegularExpressions;
+using Extensions;
 
 namespace VotingTrackRecordClasses
 {
@@ -27,16 +28,11 @@ namespace VotingTrackRecordClasses
             propublicaSettings = options.Value;
         }
 
-        public static string Combine(string uri1, string uri2)
-        {
-            uri1 = uri1.TrimEnd('/');
-            uri2 = uri2.TrimStart('/');
-            return string.Format("{0}/{1}", uri1, uri2);
-        }
-
         public async Task<Member> GetMemberByNameAsync(string userName, string name)
         {
-            var apiService = RestService.For<IPropublicaApi>(Combine(propublicaSettings.Url, propublicaSettings.Congress));
+            var apiService = RestService.For<IPropublicaApi>(
+                propublicaSettings.Url.Combine(propublicaSettings.Congress));
+            
             var chambers = new List<string>() { "house", "senate" };
             name = CleanupName(name);
             try
@@ -78,9 +74,7 @@ namespace VotingTrackRecordClasses
             var apiService = RestService.For<IPropublicaApi>(propublicaSettings.Url);
             try
             {
-                var result = await apiService.GetRecentVotesAsync(chamber, propublicaSettings.ApiKey);
-
-                return result;
+                return await apiService.GetRecentVotesAsync(chamber, propublicaSettings.ApiKey);
             }
             catch (Exception ex)
             {
@@ -92,7 +86,8 @@ namespace VotingTrackRecordClasses
 
         public async Task<BillSearchRoot> SeachBills(string query)
         {
-            var apiService = RestService.For<IPropublicaApi>(Combine(propublicaSettings.Url, propublicaSettings.Congress));
+            var apiService = RestService.For<IPropublicaApi>(propublicaSettings.Url.Combine(propublicaSettings.Congress));
+            
             try
             {
                 var result = await apiService.SearchBills(query, propublicaSettings.ApiKey);

@@ -99,13 +99,18 @@ namespace TwitterService
                     if (tweet.CreatedAt > item.LastTweet)
                     {
                         item.LastTweet = tweet.CreatedAt;
-                        Log.Debug("Tweet from {ScreenName}: {TweetText}", tweet.CreatedBy.ScreenName, tweet.FullText);
+                        
+                        Log.Debug("Tweet from {ScreenName}: {TweetText}", 
+                            tweet.CreatedBy.ScreenName, tweet.FullText);
 
-                        var member = await voteTrackerBusiness.GetPropublicaMemberInformationAsync(tweet.CreatedBy.ScreenName, tweet.CreatedBy.Name);
+                        var member = await voteTrackerBusiness.GetPropublicaMemberInformationAsync(
+                                tweet.CreatedBy.ScreenName, tweet.CreatedBy.Name);
                         
                         if (member == null)
                         {
-                            Log.Error("Propublica member not found: {UserName}, {Name}", tweet.CreatedBy.ScreenName, tweet.CreatedBy.Name);
+                            Log.Error("Propublica member not found: {UserName}, {Name}", 
+                                tweet.CreatedBy.ScreenName, tweet.CreatedBy.Name);
+                            
                             return;
                         }
                         

@@ -80,6 +80,7 @@ namespace VoteTracker
             Log.Information("Getting recent votes for chamber {Chamber}", member.Chamber);
 
             var recentVotes = await propublicaApiService.GetRecentVotesAsync(member.Chamber);
+            // vote might not be recent
 
             Log.Information("Parsing descriptions for keywords {Keywords} to get Vote Uris", keywords.Select(x => x.Word));
 
