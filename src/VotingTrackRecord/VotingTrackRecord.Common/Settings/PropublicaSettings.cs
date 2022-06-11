@@ -6,5 +6,6 @@
         public string Url { get; set; } = string.Empty;
         public string Congress { get; set; } = string.Empty;
         public string GovTrackUrl { get; set; } = string.Empty;
+        public int PageSize { get; set; }
     }
 }

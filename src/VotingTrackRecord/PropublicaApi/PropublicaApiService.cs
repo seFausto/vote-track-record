@@ -12,7 +12,7 @@ namespace VotingTrackRecordClasses
 {
     public interface IPropublicaApiService
     {
-        Task<RecentVotesRoot> GetRecentVotesAsync(string chamber);
+        Task<RecentVotesRoot> GetRecentVotesAsync(string chamber, int pageNumber = 0);
         Task<BillSearchRoot> SeachBills(string query);
         Task<Member> GetMemberByNameAsync(string userName, string name);
         Task<VoteRoot> GetVoteRecordAsync(string uri);
@@ -69,12 +69,17 @@ namespace VotingTrackRecordClasses
             return name;
         }
 
-        public async Task<RecentVotesRoot> GetRecentVotesAsync(string chamber)
+        public async Task<RecentVotesRoot> GetRecentVotesAsync(string chamber, int pageNumber = 0)
         {
             var apiService = RestService.For<IPropublicaApi>(propublicaSettings.Url);
             try
             {
-                return await apiService.GetRecentVotesAsync(chamber, propublicaSettings.ApiKey);
+                var parameters = new RecentVotesParameters()
+                {
+                    Offset = pageNumber * propublicaSettings.PageSize,
+                };
+                
+                return await apiService.GetRecentVotesAsync(chamber, parameters, propublicaSettings.ApiKey);
             }
             catch (Exception ex)
             {
@@ -119,13 +124,20 @@ namespace VotingTrackRecordClasses
         }
     }
 
+    public class RecentVotesParameters 
+    {
+        [AliasAs("offset")]
+        public int Offset { get; set; }
+    }
+
     public interface IPropublicaApi
     {
         [Get("/{chamber}/members.json")]
         Task<MemberRoot> GetMembersAsync(string chamber, [Header("X-API-KEY")] string apiKey);
 
         [Get("/{chamber}/votes/recent.json")]
-        Task<RecentVotesRoot> GetRecentVotesAsync(string chamber, [Header("X-API-KEY")] string apiKey);
+        Task<RecentVotesRoot> GetRecentVotesAsync(string chamber, RecentVotesParameters parameteres, 
+            [Header("X-API-KEY")] string apiKey);
 
         [Get("/bills/search.json?query={query}")]
         Task<BillSearchRoot> SearchBills(string query, [Header("X-API-KEY")] string apiKey);

@@ -7,6 +7,7 @@ using Serilog;
 using System.Linq;
 using Microsoft.Extensions.Options;
 using VotingTrackRecord.Common.Settings;
+using Extensions;
 
 namespace VoteTracker
 {
@@ -22,6 +23,8 @@ namespace VoteTracker
         private readonly IPropublicaRepository propublicaRepository;
         private readonly IWordListRepository wordListRepository;
         private readonly PropublicaSettings propublicaSettings;
+
+        public int RecentVotePageLimit { get; private set; }
 
         public PropublicaBusiness(IOptions<PropublicaSettings> settings, IPropublicaApiService propublicaService,
             IPropublicaRepository propublicaRepository, IWordListRepository wordListRepository)
@@ -75,25 +78,37 @@ namespace VoteTracker
         }
 
 
-        private async Task<IEnumerable<string>> GetLatestRelatedVotesMessageAsync(Member member, IEnumerable<WordReference> keywords)
+        private async Task<IEnumerable<string>> GetLatestRelatedVotesMessageAsync(Member member,
+            IEnumerable<WordReference> keywords)
         {
-            Log.Information("Getting recent votes for chamber {Chamber}", member.Chamber);
 
-            var recentVotes = await propublicaApiService.GetRecentVotesAsync(member.Chamber);
-            // vote might not be recent
-
-            Log.Information("Parsing descriptions for keywords {Keywords} to get Vote Uris", keywords.Select(x => x.Word));
-
+            var pageNumber = 0;
             var relatedVoteUris = new List<string>();
 
-            foreach (var wordReference in keywords)
-            {
-                relatedVoteUris.AddRange(recentVotes.Results.Votes.Where(item =>
-                            wordReference.Related.Any(x => item.Description.Contains(x, StringComparison.CurrentCultureIgnoreCase)))
-                            .Select(x => x.VoteUri)
-                            .ToList());
-            }
 
+            do
+            {
+
+                //save each roll call to mongodb
+
+                Log.Information("Getting recent votes for chamber {Chamber}, Page (starting with 0): {PageNumber}",
+                    member.Chamber, pageNumber);
+
+                var recentVotes = await propublicaApiService.GetRecentVotesAsync(member.Chamber, pageNumber);
+
+                Log.Information("Parsing descriptions for keywords {Keywords} to get Vote Uris",
+                    keywords.Select(x => x.Word));
+
+                foreach (var wordReference in keywords)
+                {
+                    relatedVoteUris.AddRange(recentVotes.Results.Votes.Where(item =>
+                                wordReference.Related.Any(x => item.Description.Contains(x, StringComparison.CurrentCultureIgnoreCase)))
+                                .Select(x => x.VoteUri)
+                                .ToList());
+                }
+            } while (pageNumber < RecentVotePageLimit && !relatedVoteUris.HasItems());
+
+            //if no related votes found, loop to next page
 
             var voteRoots = new List<VoteRoot>();
             foreach (var uri in relatedVoteUris)
