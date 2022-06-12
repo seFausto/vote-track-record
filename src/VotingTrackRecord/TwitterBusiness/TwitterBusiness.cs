@@ -19,7 +19,6 @@ namespace TwitterService
     {
         public long FriendId { get; set; }
         public long LastTweetId { get; set; }
-        public DateTimeOffset LastTweet { get; set; }
         public DateTimeOffset LastCheck { get; set; }
     }
 
@@ -36,7 +35,6 @@ namespace TwitterService
 
         private static List<FriendIdTweetTime>? friendIdsLastTweet = null;
 
-
         public TwitterBusiness(IOptions<TwitterSettings> options, IPropublicaBusiness voteTrackerBusiness,
             IPropublicaRepository propublicaRepository)
         {
@@ -47,7 +45,6 @@ namespace TwitterService
             this.propublicaRepository = propublicaRepository;
 
             Task.Run(() => SetFriendIdsAsync()).Wait();
-
         }
 
         private async Task SetFriendIdsAsync()
@@ -67,8 +64,7 @@ namespace TwitterService
                 friendIdsLastTweet.Add(new FriendIdTweetTime
                 {
                     FriendId = friendId,
-                    LastTweet = DateTimeOffset.Now.AddDays(-1),
-                    LastCheck = DateTimeOffset.MinValue
+                    LastCheck = DateTimeOffset.MinValue,
                 });
             }
         }
@@ -77,9 +73,8 @@ namespace TwitterService
         {
             if (friendIdsLastTweet is null)
                 return;
-
-            var userClient = new TwitterClient(twitterSettings.ApiKey, twitterSettings.ApiKeySecret,
-                twitterSettings.AccessToken, twitterSettings.AccessTokenSecret);
+            
+            var userClient = GetTwitterClient();
 
             foreach (var item in friendIdsLastTweet.OrderBy(x => x.LastCheck).Take(BatchSize))
             {
@@ -90,24 +85,24 @@ namespace TwitterService
                     ExcludeReplies = true,
                     SinceId = item.LastTweetId
                 };
-
+                
                 var tweets = await userClient.Timelines.GetUserTimelineAsync(item.FriendId);
-
-                foreach (var tweet in tweets
-                                        .Where(x => x.CreatedAt > item.LastTweet)
-                                        .OrderBy(x => x.CreatedAt))
+                
+                Log.Debug("Returned {Count} tweets for {FriendId}", tweets.Length, item.FriendId);
+                
+                foreach (var tweet in tweets.Where(x => x.Id > item.LastTweetId)
+                                            .OrderByDescending(x => x.Id))
                 {
                     if (tweet is null)
                         continue;
 
-                    if (tweet.Id <= item.LastTweetId)
+                    if (tweet.Id < item.LastTweetId)
                         continue;
+
+                    item.LastTweetId = tweet.Id;
 
                     if (await propublicaRepository.HasAlreadyBeenTweeted(tweet.Id))
                         continue;
-
-                    item.LastTweet = tweet.CreatedAt;
-                    item.LastTweetId = tweet.Id;
 
                     Log.Debug("Tweet from {ScreenName}: {TweetText}",
                         tweet.CreatedBy.ScreenName, tweet.FullText);
@@ -115,7 +110,7 @@ namespace TwitterService
                     var member = await voteTrackerBusiness.GetPropublicaMemberInformationAsync(
                             tweet.CreatedBy.ScreenName, tweet.CreatedBy.Name);
 
-                    if (member == null)
+                    if (member is null)
                     {
                         Log.Error("Propublica member not found: {UserName}, {Name}",
                             tweet.CreatedBy.ScreenName, tweet.CreatedBy.Name);
@@ -136,10 +131,15 @@ namespace TwitterService
             }
         }
 
+        private TwitterClient GetTwitterClient()
+        {
+            return new TwitterClient(twitterSettings.ApiKey, twitterSettings.ApiKeySecret,
+                twitterSettings.AccessToken, twitterSettings.AccessTokenSecret);
+        }
+
         public async Task QuoteTweetWithVoteData(Tweetinvi.Models.ITweet tweet, IEnumerable<string> messages)
         {
-            var userClient = new TwitterClient(twitterSettings.ApiKey, twitterSettings.ApiKeySecret,
-                twitterSettings.AccessToken, twitterSettings.AccessTokenSecret);
+            var userClient = GetTwitterClient();
 
             foreach (var item in messages)
             {

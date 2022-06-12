@@ -24,7 +24,7 @@ namespace VoteTracker
         private readonly IWordListRepository wordListRepository;
         private readonly PropublicaSettings propublicaSettings;
 
-        public int RecentVotePageLimit { get; private set; }
+        private int RecentVotePageLimit = 5;
 
         public PropublicaBusiness(IOptions<PropublicaSettings> settings, IPropublicaApiService propublicaService,
             IPropublicaRepository propublicaRepository, IWordListRepository wordListRepository)
@@ -101,9 +101,9 @@ namespace VoteTracker
                                 .Select(x => x.VoteUri)
                                 .ToList());
                 }
-                
+
                 pageNumber++;
-            } while (pageNumber >= RecentVotePageLimit && !relatedVoteUris.HasItems());
+            } while (pageNumber <= RecentVotePageLimit && !relatedVoteUris.HasItems());
 
             //if no related votes found, loop to next page
 
