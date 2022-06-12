@@ -14,7 +14,7 @@ namespace VotingTrackRecordClasses
     {
         Task<RecentVotesRoot> GetRecentVotesAsync(string chamber, int pageNumber = 0);
         Task<BillSearchRoot> SeachBills(string query);
-        Task<Member> GetMemberByNameAsync(string userName, string name);
+        Task<Member> GetMemberByNameAsync(string name);
         Task<VoteRoot> GetVoteRecordAsync(string uri);
     }
 
@@ -28,21 +28,24 @@ namespace VotingTrackRecordClasses
             propublicaSettings = options.Value;
         }
 
-        public async Task<Member> GetMemberByNameAsync(string userName, string name)
+        public async Task<Member> GetMemberByNameAsync(string name)
         {
-            var apiService = RestService.For<IPropublicaApi>(
-                propublicaSettings.Url.Combine(propublicaSettings.Congress));
+            var apiUrl = propublicaSettings.Url.Combine(propublicaSettings.Congress);
+            var apiService = RestService.For<IPropublicaApi>(apiUrl);
             
             var chambers = new List<string>() { "house", "senate" };
-            name = CleanupName(name);
+            
+            var cleanName = CleanupName(name);
+            
             try
             {
                 foreach (var chamber in chambers)
                 {
                     var members = await apiService.GetMembersAsync(chamber, propublicaSettings.ApiKey);
-
+                    var cleanNameArray = cleanName.Split(' ');
                     var result = members.Results?.FirstOrDefault().Members?.FirstOrDefault(m =>
-                            m.FirstName == name.Split(' ').First() && m.LastName == name.Split(' ').Last());
+                            m.FirstName == cleanNameArray.First() 
+                            && m.LastName == cleanNameArray.Last());
 
                     if (result != null)
                     {
@@ -53,11 +56,11 @@ namespace VotingTrackRecordClasses
             }
             catch (Exception ex)
             {
-                Log.Error(ex, "Error getting member by name");
+                Log.Error(ex, "Error getting member by name: {Name}", cleanName);
                 throw;
             }
 
-            Log.Information("Member not found {Name}");
+            Log.Information("Member not found {Name}", cleanName);
             return null;
         }
 
@@ -83,7 +86,7 @@ namespace VotingTrackRecordClasses
             }
             catch (Exception ex)
             {
-                Log.Error(ex, "Error getting recent votes");
+                Log.Error(ex, "Error getting recent votes for chamber {Chamber}", chamber);
                 throw;
             }
 
@@ -91,7 +94,8 @@ namespace VotingTrackRecordClasses
 
         public async Task<BillSearchRoot> SeachBills(string query)
         {
-            var apiService = RestService.For<IPropublicaApi>(propublicaSettings.Url.Combine(propublicaSettings.Congress));
+            var apiUrl = propublicaSettings.Url.Combine(propublicaSettings.Congress);
+            var apiService = RestService.For<IPropublicaApi>(apiUrl);
             
             try
             {
@@ -110,15 +114,14 @@ namespace VotingTrackRecordClasses
         public async Task<VoteRoot> GetVoteRecordAsync(string uri)
         {
             var apiService = RestService.For<IPropublicaApi>(uri);
+            
             try
             {
-                var result = await apiService.GetVoteRecordAsync(propublicaSettings.ApiKey);
-
-                return result;
+                return await apiService.GetVoteRecordAsync(propublicaSettings.ApiKey);
             }
             catch (Exception ex)
             {
-                Log.Error(ex, "Error in Search bills");
+                Log.Error(ex, "Error in Search bills {Uri}", uri);
                 throw;
             }
         }

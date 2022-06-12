@@ -18,6 +18,7 @@ namespace TwitterService
     internal class FriendIdTweetTime
     {
         public long FriendId { get; set; }
+        public long LastTweetId { get; set; }
         public DateTimeOffset LastTweet { get; set; }
         public DateTimeOffset LastCheck { get; set; }
     }
@@ -84,6 +85,12 @@ namespace TwitterService
             {
                 item.LastCheck = DateTimeOffset.Now;
 
+                var parameters = new GetUserTimelineParameters(item.FriendId)
+                {
+                    ExcludeReplies = true,
+                    SinceId = item.LastTweetId
+                };
+
                 var tweets = await userClient.Timelines.GetUserTimelineAsync(item.FriendId);
 
                 foreach (var tweet in tweets
@@ -93,60 +100,60 @@ namespace TwitterService
                     if (tweet is null)
                         continue;
 
+                    if (tweet.Id <= item.LastTweetId)
+                        continue;
+
                     if (await propublicaRepository.HasAlreadyBeenTweeted(tweet.Id))
                         continue;
 
-                    if (tweet.CreatedAt > item.LastTweet)
+                    item.LastTweet = tweet.CreatedAt;
+                    item.LastTweetId = tweet.Id;
+
+                    Log.Debug("Tweet from {ScreenName}: {TweetText}",
+                        tweet.CreatedBy.ScreenName, tweet.FullText);
+
+                    var member = await voteTrackerBusiness.GetPropublicaMemberInformationAsync(
+                            tweet.CreatedBy.ScreenName, tweet.CreatedBy.Name);
+
+                    if (member == null)
                     {
-                        item.LastTweet = tweet.CreatedAt;
-                        
-                        Log.Debug("Tweet from {ScreenName}: {TweetText}", 
-                            tweet.CreatedBy.ScreenName, tweet.FullText);
+                        Log.Error("Propublica member not found: {UserName}, {Name}",
+                            tweet.CreatedBy.ScreenName, tweet.CreatedBy.Name);
 
-                        var member = await voteTrackerBusiness.GetPropublicaMemberInformationAsync(
-                                tweet.CreatedBy.ScreenName, tweet.CreatedBy.Name);
-                        
-                        if (member == null)
-                        {
-                            Log.Error("Propublica member not found: {UserName}, {Name}", 
-                                tweet.CreatedBy.ScreenName, tweet.CreatedBy.Name);
-                            
-                            return;
-                        }
-                        
-                        var messages = await voteTrackerBusiness.GetReplyMessage(tweet.CreatedBy.ScreenName,
-                            tweet.CreatedBy.Name, tweet.FullText, member);
-
-                        if (messages.HasItems())
-                        {
-                            await ReplyToUsersTweetAsync(tweet, messages);
-                        }
-
-                        await propublicaRepository.AddTweetAsync(tweet.Id, JsonSerializer.Serialize(messages));
+                        return;
                     }
+
+                    var messages = await voteTrackerBusiness.GetReplyMessage(tweet.CreatedBy.ScreenName,
+                        tweet.CreatedBy.Name, tweet.FullText, member);
+
+                    if (messages.HasItems())
+                    {
+                        await QuoteTweetWithVoteData(tweet, messages);
+                    }
+
+                    await propublicaRepository.AddTweetAsync(tweet.Id, JsonSerializer.Serialize(messages));
                 }
             }
         }
 
-        public async Task ReplyToUsersTweetAsync(Tweetinvi.Models.ITweet tweet, IEnumerable<string> messages)
+        public async Task QuoteTweetWithVoteData(Tweetinvi.Models.ITweet tweet, IEnumerable<string> messages)
         {
             var userClient = new TwitterClient(twitterSettings.ApiKey, twitterSettings.ApiKeySecret,
                 twitterSettings.AccessToken, twitterSettings.AccessTokenSecret);
 
             foreach (var item in messages)
             {
-                var message = $"@{tweet.CreatedBy} {item}";
-
+                var message = $"{item}";
                 try
                 {
                     _ = await userClient.Tweets.PublishTweetAsync(new PublishTweetParameters(message)
                     {
-                        InReplyToTweet = tweet
+                        QuotedTweet = tweet
                     });
                 }
                 catch (Exception ex)
                 {
-                    Log.Error(ex, "Error replying to tweet");
+                    Log.Error(ex, "Error quoting tweet {TweetId}", tweet.Id);
                     throw;
                 }
 

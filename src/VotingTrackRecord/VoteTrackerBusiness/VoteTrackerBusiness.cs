@@ -61,7 +61,7 @@ namespace VoteTracker
             {
                 Log.Information("UserName {userName} not found in mongo, getting from api", userName);
 
-                member = await propublicaApiService.GetMemberByNameAsync(userName, name);
+                member = await propublicaApiService.GetMemberByNameAsync(name);
 
                 if (member is null)
                 {
@@ -81,17 +81,12 @@ namespace VoteTracker
         private async Task<IEnumerable<string>> GetLatestRelatedVotesMessageAsync(Member member,
             IEnumerable<WordReference> keywords)
         {
-
             var pageNumber = 0;
             var relatedVoteUris = new List<string>();
 
-
             do
             {
-
-                //save each roll call to mongodb
-
-                Log.Information("Getting recent votes for chamber {Chamber}, Page (starting with 0): {PageNumber}",
+                Log.Information("Getting recent votes for chamber {Chamber}, Page: {PageNumber}",
                     member.Chamber, pageNumber);
 
                 var recentVotes = await propublicaApiService.GetRecentVotesAsync(member.Chamber, pageNumber);
@@ -106,7 +101,9 @@ namespace VoteTracker
                                 .Select(x => x.VoteUri)
                                 .ToList());
                 }
-            } while (pageNumber < RecentVotePageLimit && !relatedVoteUris.HasItems());
+                
+                pageNumber++;
+            } while (pageNumber >= RecentVotePageLimit && !relatedVoteUris.HasItems());
 
             //if no related votes found, loop to next page
 
@@ -128,7 +125,7 @@ namespace VoteTracker
                 var billIdTitle = $"{item.Results.Votes.Vote.Question} for {item.Results.Votes.Vote.Bill.BillId}: {item.Results.Votes.Vote.Bill.Title} " +
                     $"{propublicaSettings.GovTrackUrl}/{chamber}{item.Results.Votes.Vote.RollCall}";
 
-                result.Add($"You voted {memberPositions.VotePosition.ToUpper()} {billIdTitle}");
+                result.Add($"{member.Title} {member.FirstName} {member.LastName} voted {memberPositions.VotePosition.ToUpper()} {billIdTitle}");
             }
 
             result.ForEach(x => Log.Debug(x));
@@ -152,9 +149,8 @@ namespace VoteTracker
 
                 await propublicaRepository.AddVoteRecordAsync(uri, JsonSerializer.Serialize(voteRecord));
             }
-
+            
             return voteRecord;
         }
-
     }
 }
