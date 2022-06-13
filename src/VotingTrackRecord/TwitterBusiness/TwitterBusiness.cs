@@ -25,7 +25,7 @@ namespace TwitterService
 
     public class TwitterBusiness : ITwitterBusiness
     {
-        private const int BatchSize = 5;
+        private const int BatchSize = 1;
 
         private readonly TwitterSettings twitterSettings;
 
@@ -79,15 +79,9 @@ namespace TwitterService
             foreach (var item in friendIdsLastTweet.OrderBy(x => x.LastCheck).Take(BatchSize))
             {
                 item.LastCheck = DateTimeOffset.Now;
-
-                var parameters = new GetUserTimelineParameters(item.FriendId)
-                {
-                    ExcludeReplies = true,
-                    SinceId = item.LastTweetId
-                };
                 
                 var tweets = await userClient.Timelines.GetUserTimelineAsync(item.FriendId);
-                
+                                
                 Log.Debug("Returned {Count} tweets for {FriendId}", tweets.Length, item.FriendId);
                 
                 foreach (var tweet in tweets.Where(x => x.Id > item.LastTweetId)

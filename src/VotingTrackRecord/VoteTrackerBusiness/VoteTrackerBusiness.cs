@@ -24,12 +24,12 @@ namespace VoteTracker
         private readonly IWordListRepository wordListRepository;
         private readonly PropublicaSettings propublicaSettings;
 
-        private int RecentVotePageLimit = 5;
+        private const int RecentVotePageLimit = 5;
 
-        public PropublicaBusiness(IOptions<PropublicaSettings> settings, IPropublicaApiService propublicaService,
+        public PropublicaBusiness(IOptions<PropublicaSettings> settings, IPropublicaApiService propublicaApiService,
             IPropublicaRepository propublicaRepository, IWordListRepository wordListRepository)
         {
-            this.propublicaApiService = propublicaService;
+            this.propublicaApiService = propublicaApiService;
             this.propublicaRepository = propublicaRepository;
             this.wordListRepository = wordListRepository;
 
@@ -39,6 +39,11 @@ namespace VoteTracker
         public async Task<IEnumerable<string>> GetReplyMessage(string userName, string name, string tweetText, Member member)
         {
             var keywords = await GetKeywordsAsync(tweetText);
+
+            if (!keywords.HasItems())
+            {
+                return new List<string>();
+            }
 
             return await GetLatestRelatedVotesMessageAsync(member, keywords);
         }
@@ -65,7 +70,7 @@ namespace VoteTracker
 
                 if (member is null)
                 {
-                    Log.Error("UserName {userName} not found in api", userName);
+                    Log.Error("UserName {userName} not found in propublica api", userName);
                     return null;
                 }
 
@@ -96,16 +101,14 @@ namespace VoteTracker
 
                 foreach (var wordReference in keywords)
                 {
-                    relatedVoteUris.AddRange(recentVotes.Results.Votes.Where(item =>
-                                wordReference.Related.Any(x => item.Description.Contains(x, StringComparison.CurrentCultureIgnoreCase)))
-                                .Select(x => x.VoteUri)
-                                .ToList());
+                    relatedVoteUris.AddRange(recentVotes.Results.Votes.Where(item => 
+                                wordReference.Related.Any(x => 
+                                    item.Description.Contains(x, StringComparison.CurrentCultureIgnoreCase)))
+                                .Select(x => x.VoteUri).ToList());
                 }
 
                 pageNumber++;
             } while (pageNumber <= RecentVotePageLimit && !relatedVoteUris.HasItems());
-
-            //if no related votes found, loop to next page
 
             var voteRoots = new List<VoteRoot>();
             foreach (var uri in relatedVoteUris)
@@ -116,21 +119,29 @@ namespace VoteTracker
             var result = new List<string>();
             foreach (var item in voteRoots)
             {
-                var memberPositions = item.Results.Votes.Vote.Positions.SingleOrDefault(x => x.MemberId == member.Id);
+                var memberPositions = item.Results.Votes.Vote.Positions
+                    .SingleOrDefault(x => x.MemberId == member.Id);
 
                 if (memberPositions is null)
                     continue;
 
                 var chamber = member.Chamber == "House" ? "h" : "s";
-                var billIdTitle = $"{item.Results.Votes.Vote.Question} for {item.Results.Votes.Vote.Bill.BillId}: {item.Results.Votes.Vote.Bill.Title} " +
-                    $"{propublicaSettings.GovTrackUrl}/{chamber}{item.Results.Votes.Vote.RollCall}";
+                string billTitle = BillTitle(item, chamber);
 
-                result.Add($"{member.Title} {member.FirstName} {member.LastName} voted {memberPositions.VotePosition.ToUpper()} {billIdTitle}");
+                result.Add($"{member.Title} {member.FirstName} {member.LastName} " +
+                    $"voted {memberPositions.VotePosition.ToUpper()} {billTitle}");
             }
 
             result.ForEach(x => Log.Debug(x));
 
             return result;
+        }
+
+        private string BillTitle(VoteRoot item, string chamber)
+        {
+            return $"{item.Results.Votes.Vote.Question} " +
+                $"for {item.Results.Votes.Vote.Bill.BillId}: {item.Results.Votes.Vote.Bill.Title} " +
+                $"{propublicaSettings.GovTrackUrl}/{chamber}{item.Results.Votes.Vote.RollCall}";
         }
 
         private async Task<VoteRoot> GetPropublicaVoteRecordAsync(string uri)
@@ -149,7 +160,7 @@ namespace VoteTracker
 
                 await propublicaRepository.AddVoteRecordAsync(uri, JsonSerializer.Serialize(voteRecord));
             }
-            
+
             return voteRecord;
         }
     }
