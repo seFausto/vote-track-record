@@ -13,5 +13,11 @@ namespace VotingTrackRecord.Controllers
         {
             this.voteTrackerBusiness = voteTrackerBusiness;
         }
+
+        [HttpGet]
+        public IActionResult Check()
+        {
+            return new OkResult();
+        }
     }
 }
