@@ -27,6 +27,5 @@ namespace VotingTrackRecord.Controllers
             await twitterBusiness.GetTweetsAsync();
             return new OkResult();
         }
-
     }
 }
