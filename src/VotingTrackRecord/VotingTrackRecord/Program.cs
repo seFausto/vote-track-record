@@ -8,6 +8,7 @@ using Hangfire.SqlServer;
 using HangfireBasicAuthenticationFilter;
 using TwitterService;
 using Repository;
+using VotingTrackRecord.Middleware;
 
 namespace VotingTrackRecord
 {
@@ -22,6 +23,9 @@ namespace VotingTrackRecord
             builder.Services.AddControllers();
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
+
+            var applicationSettings = builder.Configuration.GetSection("ApplicationSettings");
+            builder.Services.Configure<ApplicationSettings>(applicationSettings);
 
             var propublicaSettings = builder.Configuration.GetSection("PropublicaSettings");
             builder.Services.Configure<PropublicaSettings>(propublicaSettings);
@@ -40,32 +44,13 @@ namespace VotingTrackRecord
             builder.Services.AddSingleton<IPropublicaBusiness, PropublicaBusiness>();
             builder.Services.AddSingleton<ITwitterBusiness, TwitterBusiness>();
 
-
-
             Log.Logger = new LoggerConfiguration()
                 .MinimumLevel.Debug()
                 .Enrich.FromLogContext()
                 .WriteTo.Console()
                 .WriteTo.Http(builder.Configuration["ApplicationSettings:LoggingHttpEndpoint"].ToString(), 1000)
                 .CreateLogger();
-
-            builder.Services.AddHangfire(configuration => configuration
-                .SetDataCompatibilityLevel(CompatibilityLevel.Version_170)
-                .UseSimpleAssemblyNameTypeSerializer()
-                .UseRecommendedSerializerSettings()
-                .UseSqlServerStorage(builder.Configuration["ConnectionStrings:HangfireConnection"],
-                    new SqlServerStorageOptions
-                    {
-                        CommandBatchMaxTimeout = TimeSpan.FromMinutes(5),
-                        SlidingInvisibilityTimeout = TimeSpan.FromMinutes(5),
-                        QueuePollInterval = TimeSpan.Zero,
-                        UseRecommendedIsolationLevel = true,
-                        UsePageLocksOnDequeue = true,
-                        DisableGlobalLocks = true
-                    }));
-
-            builder.Services.AddHangfireServer();
-
+            
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
@@ -75,28 +60,13 @@ namespace VotingTrackRecord
                 app.UseSwaggerUI();
             }
 
-            app.UseHangfireDashboard("/hangfire", new DashboardOptions
-            {
-                DashboardTitle = "Vote Tracker",
-                Authorization = new[]
-                {
-                    new HangfireCustomBasicAuthenticationFilter{
-                        User = builder.Configuration.GetSection("HangfireSettings:UserName").Value,
-                        Pass = builder.Configuration.GetSection("HangfireSettings:Password").Value
-                    }
-                }
-            });
-
-            var business = app.Services.GetRequiredService<ITwitterBusiness>();
-            RecurringJob.AddOrUpdate("Get Latest Tweets", () => business.GetTweetsAsync(), "*/15 * * * *");
+            app.UseMiddleware<ApiKeyMiddleware>();
 
             app.UseHttpsRedirection();
 
             app.UseAuthorization();
 
             app.MapControllers();
-
-            app.MapHangfireDashboard();
 
             app.Run();
         }

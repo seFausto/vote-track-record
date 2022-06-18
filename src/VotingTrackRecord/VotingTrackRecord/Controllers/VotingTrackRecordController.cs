@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using TwitterService;
 using VoteTracker;
 
 namespace VotingTrackRecord.Controllers
@@ -8,16 +9,24 @@ namespace VotingTrackRecord.Controllers
     [ApiController]
     public class VotingTrackRecordController : ControllerBase
     {
-        private readonly IPropublicaBusiness voteTrackerBusiness;
-        public VotingTrackRecordController(IPropublicaBusiness voteTrackerBusiness)
+        private readonly ITwitterBusiness twitterBusiness;
+        public VotingTrackRecordController(ITwitterBusiness twitterBusiness)
         {
-            this.voteTrackerBusiness = voteTrackerBusiness;
+            this.twitterBusiness = twitterBusiness;
         }
-
+        
         [HttpGet]
         public IActionResult Check()
         {
             return new OkResult();
         }
+
+        [HttpGet("run")]
+        public async Task<IActionResult> RunProcess()
+        {
+            await twitterBusiness.GetTweetsAsync();
+            return new OkResult();
+        }
+
     }
 }
