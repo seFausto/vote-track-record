@@ -61,6 +61,7 @@ namespace TwitterService
 
             foreach (var friendId in friendsIds)
             {
+                Log.Information("Adding {FriendId} to list", friendId);
                 friendIdsLastTweet.Add(new FriendIdTweetTime
                 {
                     FriendId = friendId,
@@ -73,55 +74,51 @@ namespace TwitterService
         {
             if (friendIdsLastTweet is null)
                 return;
-            
+
             var userClient = GetTwitterClient();
 
             foreach (var item in friendIdsLastTweet.OrderBy(x => x.LastCheck).Take(BatchSize))
             {
                 item.LastCheck = DateTimeOffset.Now;
-                
+
                 var tweets = await userClient.Timelines.GetUserTimelineAsync(item.FriendId);
-                                
+
                 Log.Debug("Returned {Count} tweets for {FriendId}", tweets.Length, item.FriendId);
-                
-                foreach (var tweet in tweets.Where(x => x.Id > item.LastTweetId)
-                                            .OrderByDescending(x => x.Id))
+
+                var tweet = tweets.MaxBy(x => x.Id);
+
+                if (tweet is null || tweet.Id < item.LastTweetId)
+                    continue;
+
+                item.LastTweetId = tweet.Id;
+
+                if (await propublicaRepository.HasAlreadyBeenTweeted(tweet.Id))
+                    break;
+
+                Log.Debug("Tweet from {ScreenName}: {TweetText}",
+                    tweet.CreatedBy.ScreenName, tweet.FullText);
+
+                var member = await voteTrackerBusiness.GetPropublicaMemberInformationAsync(
+                        tweet.CreatedBy.ScreenName, tweet.CreatedBy.Name);
+
+                if (member is null)
                 {
-                    if (tweet is null)
-                        continue;
+                    Log.Error("Propublica member not found: {UserName}, {Name}",
+                        tweet.CreatedBy.ScreenName, tweet.CreatedBy.Name);
 
-                    if (tweet.Id < item.LastTweetId)
-                        continue;
-
-                    item.LastTweetId = tweet.Id;
-
-                    if (await propublicaRepository.HasAlreadyBeenTweeted(tweet.Id))
-                        continue;
-
-                    Log.Debug("Tweet from {ScreenName}: {TweetText}",
-                        tweet.CreatedBy.ScreenName, tweet.FullText);
-
-                    var member = await voteTrackerBusiness.GetPropublicaMemberInformationAsync(
-                            tweet.CreatedBy.ScreenName, tweet.CreatedBy.Name);
-
-                    if (member is null)
-                    {
-                        Log.Error("Propublica member not found: {UserName}, {Name}",
-                            tweet.CreatedBy.ScreenName, tweet.CreatedBy.Name);
-
-                        return;
-                    }
-
-                    var messages = await voteTrackerBusiness.GetReplyMessage(tweet.CreatedBy.ScreenName,
-                        tweet.CreatedBy.Name, tweet.FullText, member);
-
-                    if (messages.HasItems())
-                    {
-                        await QuoteTweetWithVoteData(tweet, messages);
-                    }
-
-                    await propublicaRepository.AddTweetAsync(tweet.Id, JsonSerializer.Serialize(messages));
+                    return;
                 }
+
+                var messages = await voteTrackerBusiness.GetReplyMessage(tweet.CreatedBy.ScreenName,
+                    tweet.CreatedBy.Name, tweet.FullText, member);
+
+                if (messages.HasItems())
+                {
+                    await QuoteTweetWithVoteData(tweet, messages);
+                }
+
+                await propublicaRepository.AddTweetAsync(tweet.Id, JsonSerializer.Serialize(messages));
+
             }
         }
 
