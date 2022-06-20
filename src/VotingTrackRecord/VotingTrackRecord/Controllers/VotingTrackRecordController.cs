@@ -36,7 +36,7 @@ namespace VotingTrackRecord.Controllers
                 if (!IsApiKeyValid(apiKey))
                     return new BadRequestResult();
 
-                await twitterBusiness.GetTweetsAsync();
+                await twitterBusiness.ProcessTweetsAsync();
                 return new OkResult();
             }
             catch (Exception)

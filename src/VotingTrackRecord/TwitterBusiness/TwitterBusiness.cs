@@ -12,7 +12,7 @@ namespace TwitterService
 {
     public interface ITwitterBusiness
     {
-        Task GetTweetsAsync();
+        Task ProcessTweetsAsync();
     }
 
     internal class FriendIdTweetTime
@@ -70,7 +70,7 @@ namespace TwitterService
             }
         }
 
-        public async Task GetTweetsAsync()
+        public async Task ProcessTweetsAsync()
         {
             if (friendIdsLastTweet is null)
                 return;
@@ -93,9 +93,13 @@ namespace TwitterService
                 item.LastTweetId = tweet.Id;
 
                 if (await propublicaRepository.HasAlreadyBeenTweeted(tweet.Id))
+                {
+                    Log.Information("{ScreenName} Tweet has already been analyzed {TweetId}",
+                        tweet.CreatedBy.ScreenName, tweet.Id);
                     break;
-
-                Log.Debug("Tweet from {ScreenName}: {TweetText}",
+                }
+                
+                Log.Information("Tweet from {ScreenName}: {TweetText}",
                     tweet.CreatedBy.ScreenName, tweet.FullText);
 
                 var member = await voteTrackerBusiness.GetPropublicaMemberInformationAsync(
@@ -103,7 +107,7 @@ namespace TwitterService
 
                 if (member is null)
                 {
-                    Log.Error("Propublica member not found: {UserName}, {Name}",
+                    Log.Error("Propublica member not found: {ScreenName}, {Name}",
                         tweet.CreatedBy.ScreenName, tweet.CreatedBy.Name);
 
                     return;
