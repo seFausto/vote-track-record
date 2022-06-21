@@ -1,14 +1,9 @@
 using VotingTrackRecordClasses;
-using System.Configuration;
 using VotingTrackRecord.Common.Settings;
 using VoteTracker;
 using Serilog;
-using Hangfire;
-using Hangfire.SqlServer;
-using HangfireBasicAuthenticationFilter;
 using TwitterService;
 using Repository;
-using VotingTrackRecord.Middleware;
 
 namespace VotingTrackRecord
 {
@@ -23,18 +18,8 @@ namespace VotingTrackRecord
             builder.Services.AddControllers();
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
-
-            var applicationSettings = builder.Configuration.GetSection("ApplicationSettings");
-            builder.Services.Configure<ApplicationSettings>(applicationSettings);
-
-            var propublicaSettings = builder.Configuration.GetSection("PropublicaSettings");
-            builder.Services.Configure<PropublicaSettings>(propublicaSettings);
-
-            var databaseSettings = builder.Configuration.GetSection("DatabaseSettings");
-            builder.Services.Configure<DatabaseSettings>(databaseSettings);
-
-            var twitterSettings = builder.Configuration.GetSection("TwitterSettings");
-            builder.Services.Configure<TwitterSettings>(twitterSettings);
+            
+            SetSettings(builder);
 
             builder.Services.AddSingleton<IWordListRepository, WordListRepository>();
 
@@ -42,7 +27,7 @@ namespace VotingTrackRecord
             builder.Services.AddSingleton<IPropublicaApiService, PropublicaApiService>();
 
             builder.Services.AddSingleton<IPropublicaBusiness, PropublicaBusiness>();
-            builder.Services.AddSingleton<ITwitterBusiness, TwitterBusiness>();
+            builder.Services.AddScoped<ITwitterBusiness, TwitterBusiness>();
 
             Log.Logger = new LoggerConfiguration()
                 .MinimumLevel.Debug()
@@ -50,7 +35,7 @@ namespace VotingTrackRecord
                 .WriteTo.Console()
                 .WriteTo.Http(builder.Configuration["ApplicationSettings:LoggingHttpEndpoint"].ToString(), 1000)
                 .CreateLogger();
-            
+
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
@@ -69,6 +54,21 @@ namespace VotingTrackRecord
             app.MapControllers();
 
             app.Run();
+        }
+
+        private static void SetSettings(WebApplicationBuilder builder)
+        {
+            var applicationSettings = builder.Configuration.GetSection("ApplicationSettings");
+            builder.Services.Configure<ApplicationSettings>(applicationSettings);
+
+            var propublicaSettings = builder.Configuration.GetSection("PropublicaSettings");
+            builder.Services.Configure<PropublicaSettings>(propublicaSettings);
+
+            var databaseSettings = builder.Configuration.GetSection("DatabaseSettings");
+            builder.Services.Configure<DatabaseSettings>(databaseSettings);
+
+            var twitterSettings = builder.Configuration.GetSection("TwitterSettings");
+            builder.Services.Configure<TwitterSettings>(twitterSettings);
         }
     }
 }
