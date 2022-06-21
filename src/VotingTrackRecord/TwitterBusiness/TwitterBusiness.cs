@@ -83,7 +83,7 @@ namespace TwitterService
 
                 var tweets = await userClient.Timelines.GetUserTimelineAsync(item.FriendId);
 
-                Log.Debug("Returned {Count} tweets for {FriendId}", tweets.Length, item.FriendId);
+                Log.Information("Returned {Count} tweets for {FriendId}", tweets.Length, item.FriendId);
 
                 var tweet = tweets.MaxBy(x => x.Id);
 
@@ -141,6 +141,9 @@ namespace TwitterService
                 var message = $"{item}";
                 try
                 {
+                    Log.Information("Quoting Tweet {TweetId} from {ScreenName}: {Message}", tweet.Id, 
+                        tweet.CreatedBy.ScreenName, message);
+                    
                     _ = await userClient.Tweets.PublishTweetAsync(new PublishTweetParameters(message)
                     {
                         QuotedTweet = tweet
