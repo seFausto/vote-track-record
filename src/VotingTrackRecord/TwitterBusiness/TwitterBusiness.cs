@@ -62,6 +62,7 @@ namespace TwitterService
             foreach (var friendId in friendsIds)
             {
                 Log.Information("Adding {FriendId} to list", friendId);
+
                 friendIdsLastTweet.Add(new FriendIdTweetTime
                 {
                     FriendId = friendId,

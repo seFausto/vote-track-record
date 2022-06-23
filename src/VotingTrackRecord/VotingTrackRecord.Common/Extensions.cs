@@ -5,7 +5,7 @@ namespace Extensions
     public static class ClassExtensions
     {
         /// <summary>
-        /// Convenience method for ensuring a return is not null, basically shortcuts the null propogator (??)
+        /// Convenience method for ensuring a return is not null, basically shortcuts the null propagator (??)
         /// </summary>
         /// <typeparam name="T">The type of object</typeparam>
         /// <param name="obj">The object to new up if null</param>

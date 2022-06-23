@@ -18,7 +18,7 @@ namespace VotingTrackRecord
             builder.Services.AddControllers();
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
-            
+
             SetSettings(builder);
 
             builder.Services.AddSingleton<IWordListRepository, WordListRepository>();
@@ -27,14 +27,9 @@ namespace VotingTrackRecord
             builder.Services.AddSingleton<IPropublicaApiService, PropublicaApiService>();
 
             builder.Services.AddSingleton<IPropublicaBusiness, PropublicaBusiness>();
-            builder.Services.AddScoped<ITwitterBusiness, TwitterBusiness>();
+            builder.Services.AddSingleton<ITwitterBusiness, TwitterBusiness>();
 
-            Log.Logger = new LoggerConfiguration()
-                .MinimumLevel.Debug()
-                .Enrich.FromLogContext()
-                .WriteTo.Console()
-                .WriteTo.Http(builder.Configuration["ApplicationSettings:LoggingHttpEndpoint"].ToString(), 1000)
-                .CreateLogger();
+            CreateLogger(builder);
 
             var app = builder.Build();
 
@@ -54,6 +49,17 @@ namespace VotingTrackRecord
             app.MapControllers();
 
             app.Run();
+        }
+
+        private static void CreateLogger(WebApplicationBuilder builder)
+        {
+            Log.Logger = new LoggerConfiguration()
+                            .MinimumLevel.Debug()
+                            .Enrich.FromLogContext()
+                            .WriteTo.Console()
+                            .WriteTo.Http(builder.Configuration["ApplicationSettings:LoggingHttpEndpoint"].ToString(),
+                                queueLimitBytes: null)
+                            .CreateLogger();
         }
 
         private static void SetSettings(WebApplicationBuilder builder)
