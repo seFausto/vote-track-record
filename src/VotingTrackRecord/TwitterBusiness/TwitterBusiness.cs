@@ -99,7 +99,7 @@ namespace TwitterService
                         tweet.CreatedBy.ScreenName, tweet.Id);
                     break;
                 }
-                
+
                 Log.Information("Tweet from {ScreenName}: {TweetText}",
                     tweet.CreatedBy.ScreenName, tweet.FullText);
 
@@ -123,7 +123,6 @@ namespace TwitterService
                 }
 
                 await propublicaRepository.AddTweetAsync(tweet.Id, JsonSerializer.Serialize(messages));
-
             }
         }
 
@@ -137,14 +136,13 @@ namespace TwitterService
         {
             var userClient = GetTwitterClient();
 
-            foreach (var item in messages)
-            {
-                var message = $"{item}";
+            foreach (var message in messages)
+            {   
                 try
                 {
-                    Log.Information("Quoting Tweet {TweetId} from {ScreenName}: {Message}", tweet.Id, 
+                    Log.Information("Quoting Tweet {TweetId} from {ScreenName}: {Message}", tweet.Id,
                         tweet.CreatedBy.ScreenName, message);
-                    
+
                     _ = await userClient.Tweets.PublishTweetAsync(new PublishTweetParameters(message)
                     {
                         QuotedTweet = tweet

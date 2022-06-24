@@ -17,7 +17,7 @@ namespace VotingTrackRecord.Middleware
 
         public async Task InvokeAsync(HttpContext context)
         {
-            if (!context.Request.Headers.TryGetValue(nameof(ApplicationSettings.XApiKey) , 
+            if (!context.Request.Headers.TryGetValue(nameof(ApplicationSettings.XApiKey),
                 out var extractedApiKey))
             {
                 context.Response.StatusCode = 401;

@@ -1,9 +1,9 @@
-using VotingTrackRecordClasses;
-using VotingTrackRecord.Common.Settings;
-using VoteTracker;
+using Repository;
 using Serilog;
 using TwitterService;
-using Repository;
+using VoteTracker;
+using VotingTrackRecord.Common.Settings;
+using VotingTrackRecordClasses;
 
 namespace VotingTrackRecord
 {
@@ -21,13 +21,13 @@ namespace VotingTrackRecord
 
             SetSettings(builder);
 
-            builder.Services.AddSingleton<IWordListRepository, WordListRepository>();
+            builder.Services.AddScoped<IWordListRepository, WordListRepository>();
 
-            builder.Services.AddSingleton<IPropublicaRepository, PropublicaRepository>();
-            builder.Services.AddSingleton<IPropublicaApiService, PropublicaApiService>();
+            builder.Services.AddScoped<IPropublicaRepository, PropublicaRepository>();
+            builder.Services.AddScoped<IPropublicaApiService, PropublicaApiService>();
 
-            builder.Services.AddSingleton<IPropublicaBusiness, PropublicaBusiness>();
-            builder.Services.AddSingleton<ITwitterBusiness, TwitterBusiness>();
+            builder.Services.AddScoped<IPropublicaBusiness, PropublicaBusiness>();
+            builder.Services.AddScoped<ITwitterBusiness, TwitterBusiness>();
 
             CreateLogger(builder);
 
