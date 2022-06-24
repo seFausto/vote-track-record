@@ -8,10 +8,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Hangfire.AspNetCore" Version="1.7.29" />
-    <PackageReference Include="Hangfire.Core" Version="1.7.29" />
-    <PackageReference Include="Hangfire.Dashboard.Basic.Authentication" Version="5.0.0" />
-    <PackageReference Include="Hangfire.SqlServer" Version="1.7.29" />
     <PackageReference Include="Serilog" Version="2.11.0" />
     <PackageReference Include="Serilog.Sinks.Console" Version="4.0.1" />
     <PackageReference Include="Serilog.Sinks.Http" Version="8.0.0" />

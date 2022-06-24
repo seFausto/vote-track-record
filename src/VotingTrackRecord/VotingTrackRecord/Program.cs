@@ -13,23 +13,15 @@ namespace VotingTrackRecord
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            // Add services to the container.
-
             builder.Services.AddControllers();
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
 
-            SetSettings(builder);
+            ConfigureSettings(builder);
 
-            builder.Services.AddScoped<IWordListRepository, WordListRepository>();
+            ConfigureServices(builder);
 
-            builder.Services.AddScoped<IPropublicaRepository, PropublicaRepository>();
-            builder.Services.AddScoped<IPropublicaApiService, PropublicaApiService>();
-
-            builder.Services.AddScoped<IPropublicaBusiness, PropublicaBusiness>();
-            builder.Services.AddScoped<ITwitterBusiness, TwitterBusiness>();
-
-            CreateLogger(builder);
+            ConfigureLogger(builder);
 
             var app = builder.Build();
 
@@ -40,8 +32,6 @@ namespace VotingTrackRecord
                 app.UseSwaggerUI();
             }
 
-            //app.UseMiddleware<ApiKeyMiddleware>();
-
             app.UseHttpsRedirection();
 
             app.UseAuthorization();
@@ -51,18 +41,30 @@ namespace VotingTrackRecord
             app.Run();
         }
 
-        private static void CreateLogger(WebApplicationBuilder builder)
+        private static void ConfigureServices(WebApplicationBuilder builder)
         {
+            builder.Services.AddScoped<IWordListRepository, WordListRepository>();
+
+            builder.Services.AddScoped<IPropublicaRepository, PropublicaRepository>();
+            builder.Services.AddScoped<IPropublicaApiService, PropublicaApiService>();
+
+            builder.Services.AddScoped<IPropublicaBusiness, PropublicaBusiness>();
+            builder.Services.AddScoped<ITwitterBusiness, TwitterBusiness>();
+        }
+
+        private static void ConfigureLogger(WebApplicationBuilder builder)
+        {
+            var httpEndpoint = builder.Configuration["ApplicationSettings:LoggingHttpEndpoint"].ToString();
+
             Log.Logger = new LoggerConfiguration()
                             .MinimumLevel.Debug()
-                            .Enrich.FromLogContext()
-                            .WriteTo.Console()
-                            .WriteTo.Http(builder.Configuration["ApplicationSettings:LoggingHttpEndpoint"].ToString(),
-                                queueLimitBytes: 1)
+                            .Enrich.FromLogContext()                            
+                            .WriteTo.Http(httpEndpoint, queueLimitBytes: null)
+                            .WriteTo.File("logs\\twitterbot.log", rollingInterval: RollingInterval.Day)
                             .CreateLogger();
         }
 
-        private static void SetSettings(WebApplicationBuilder builder)
+        private static void ConfigureSettings(WebApplicationBuilder builder)
         {
             var applicationSettings = builder.Configuration.GetSection("ApplicationSettings");
             builder.Services.Configure<ApplicationSettings>(applicationSettings);

@@ -26,8 +26,9 @@ namespace VoteTracker
 
         private const int RecentVotePageLimit = 5;
 
-        public PropublicaBusiness(IOptions<PropublicaSettings> settings, IPropublicaApiService propublicaApiService,
-            IPropublicaRepository propublicaRepository, IWordListRepository wordListRepository)
+        public PropublicaBusiness(IOptions<PropublicaSettings> settings,
+            IPropublicaApiService propublicaApiService, IPropublicaRepository propublicaRepository,
+            IWordListRepository wordListRepository)
         {
             this.propublicaApiService = propublicaApiService;
             this.propublicaRepository = propublicaRepository;
@@ -36,7 +37,8 @@ namespace VoteTracker
             propublicaSettings = settings.Value;
         }
 
-        public async Task<IEnumerable<string>> GetReplyMessage(string userName, string name, string tweetText, Member member)
+        public async Task<IEnumerable<string>> GetReplyMessage(string userName, string name,
+            string tweetText, Member member)
         {
             var keywords = await GetKeywordsAsync(tweetText);
 
@@ -101,8 +103,8 @@ namespace VoteTracker
 
                 foreach (var wordReference in keywords)
                 {
-                    relatedVoteUris.AddRange(recentVotes.Results.Votes.Where(item => 
-                                wordReference.Related.Any(x => 
+                    relatedVoteUris.AddRange(recentVotes.Results.Votes.Where(item =>
+                                wordReference.Related.Any(x =>
                                     item.Description.Contains(x, StringComparison.CurrentCultureIgnoreCase)))
                                 .Select(x => x.VoteUri).ToList());
                 }
