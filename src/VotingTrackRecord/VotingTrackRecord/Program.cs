@@ -58,7 +58,7 @@ namespace VotingTrackRecord
                             .Enrich.FromLogContext()
                             .WriteTo.Console()
                             .WriteTo.Http(builder.Configuration["ApplicationSettings:LoggingHttpEndpoint"].ToString(),
-                                queueLimitBytes: null)
+                                queueLimitBytes: 1)
                             .CreateLogger();
         }
 

@@ -25,7 +25,7 @@ namespace TwitterService
 
     public class TwitterBusiness : ITwitterBusiness
     {
-        private const int BatchSize = 1;
+        private readonly int BatchSize = 2;
 
         private readonly TwitterSettings twitterSettings;
 
@@ -97,7 +97,7 @@ namespace TwitterService
                 {
                     Log.Information("{ScreenName} Tweet has already been analyzed {TweetId}",
                         tweet.CreatedBy.ScreenName, tweet.Id);
-                    break;
+                    continue;
                 }
 
                 Log.Information("Tweet from {ScreenName}: {TweetText}",

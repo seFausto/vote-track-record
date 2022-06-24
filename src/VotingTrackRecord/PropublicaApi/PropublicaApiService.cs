@@ -13,8 +13,8 @@ namespace VotingTrackRecordClasses
     public interface IPropublicaApiService
     {
         Task<RecentVotesRoot> GetRecentVotesAsync(string chamber, int pageNumber = 0);
-        Task<BillSearchRoot> SeachBills(string query);
-        Task<Member> GetMemberByNameAsync(string name);
+        Task<BillSearchRoot> SearchBills(string query);
+        Task<Member> GetMemberByNameAsync(string name, string screenName);
         Task<VoteRoot> GetVoteRecordAsync(string uri);
     }
 
@@ -28,15 +28,15 @@ namespace VotingTrackRecordClasses
             propublicaSettings = options.Value;
         }
 
-        public async Task<Member> GetMemberByNameAsync(string name)
+        public async Task<Member> GetMemberByNameAsync(string name, string screenName)
         {
             var apiUrl = propublicaSettings.Url.Combine(propublicaSettings.Congress);
             var apiService = RestService.For<IPropublicaApi>(apiUrl);
-            
+
             var chambers = new List<string>() { "house", "senate" };
-            
+
             var cleanName = CleanupName(name);
-            
+
             try
             {
                 foreach (var chamber in chambers)
@@ -44,8 +44,8 @@ namespace VotingTrackRecordClasses
                     var members = await apiService.GetMembersAsync(chamber, propublicaSettings.ApiKey);
                     var cleanNameArray = cleanName.Split(' ');
                     var result = members.Results?.FirstOrDefault().Members?.FirstOrDefault(m =>
-                            m.FirstName == cleanNameArray.First() 
-                            && m.LastName == cleanNameArray.Last());
+                            (m.FirstName == cleanNameArray.First() && m.LastName == cleanNameArray.Last()) ||
+                            m.TwitterAccount == screenName);
 
                     if (result != null)
                     {
@@ -81,7 +81,7 @@ namespace VotingTrackRecordClasses
                 {
                     Offset = pageNumber * propublicaSettings.PageSize,
                 };
-                
+
                 return await apiService.GetRecentVotesAsync(chamber, parameters, propublicaSettings.ApiKey);
             }
             catch (Exception ex)
@@ -92,11 +92,11 @@ namespace VotingTrackRecordClasses
 
         }
 
-        public async Task<BillSearchRoot> SeachBills(string query)
+        public async Task<BillSearchRoot> SearchBills(string query)
         {
             var apiUrl = propublicaSettings.Url.Combine(propublicaSettings.Congress);
             var apiService = RestService.For<IPropublicaApi>(apiUrl);
-            
+
             try
             {
                 var result = await apiService.SearchBills(query, propublicaSettings.ApiKey);
@@ -114,7 +114,7 @@ namespace VotingTrackRecordClasses
         public async Task<VoteRoot> GetVoteRecordAsync(string uri)
         {
             var apiService = RestService.For<IPropublicaApi>(uri);
-            
+
             try
             {
                 return await apiService.GetVoteRecordAsync(propublicaSettings.ApiKey);
@@ -127,7 +127,7 @@ namespace VotingTrackRecordClasses
         }
     }
 
-    public class RecentVotesParameters 
+    public class RecentVotesParameters
     {
         [AliasAs("offset")]
         public int Offset { get; set; }
@@ -139,7 +139,7 @@ namespace VotingTrackRecordClasses
         Task<MemberRoot> GetMembersAsync(string chamber, [Header("X-API-KEY")] string apiKey);
 
         [Get("/{chamber}/votes/recent.json")]
-        Task<RecentVotesRoot> GetRecentVotesAsync(string chamber, RecentVotesParameters parameteres, 
+        Task<RecentVotesRoot> GetRecentVotesAsync(string chamber, RecentVotesParameters parameteres,
             [Header("X-API-KEY")] string apiKey);
 
         [Get("/bills/search.json?query={query}")]

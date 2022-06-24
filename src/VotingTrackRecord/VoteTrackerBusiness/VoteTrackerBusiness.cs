@@ -66,7 +66,7 @@ namespace VoteTracker
             {
                 Log.Information("UserName {userName} not found in mongo, getting from api", userName);
 
-                member = await propublicaApiService.GetMemberByNameAsync(name);
+                member = await propublicaApiService.GetMemberByNameAsync(name, userName);
 
                 if (member is null)
                 {
