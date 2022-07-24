@@ -35,14 +35,16 @@ namespace VotingTrackRecordClasses
 
             var chambers = new List<string>() { "house", "senate" };
 
-            var cleanName = CleanupName(name);
+            var cleanName = CleanUpName(name);
 
             try
             {
                 foreach (var chamber in chambers)
                 {
                     var members = await apiService.GetMembersAsync(chamber, propublicaSettings.ApiKey);
+                    
                     var cleanNameArray = cleanName.Split(' ');
+
                     var result = members.Results?.FirstOrDefault().Members?.FirstOrDefault(m =>
                             (m.FirstName == cleanNameArray.First() && m.LastName == cleanNameArray.Last()) ||
                             m.TwitterAccount == screenName);
@@ -64,9 +66,11 @@ namespace VotingTrackRecordClasses
             return null;
         }
 
-        private static string CleanupName(string name)
+        private static string CleanUpName(string name)
         {
             name = name.Replace("Rep.", string.Empty).Replace("Sen.", string.Empty);
+            name = name.Replace("Senator", string.Empty);
+
             name = Regex.Replace(name, @"[^\u0000-\u007F]+", string.Empty);
             name = name.Trim();
             return name;

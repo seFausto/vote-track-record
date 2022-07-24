@@ -2,11 +2,12 @@
   "wordList": [
     {
       "word": "gender",
-      "related": [ "sexuality", "homo" ]
+      "related": [ "sexuality", "homo", "lgbt" ]
     },
     {
       "word": "gun",
-      "related": [ "weapon", "ar-15", "pistol", "second amendment", "2A", "gun", "school shooting" ]
+      "related": [ "weapon", "ar-15", "pistol", "second amendment",
+                   "2A", "gun", "school shooting", "mass shooting" ]
     },
     {
       "word": "fuel",

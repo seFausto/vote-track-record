@@ -13,7 +13,8 @@ namespace VoteTracker
 {
     public interface IPropublicaBusiness
     {
-        Task<IEnumerable<string>> GetReplyMessage(string userName, string name, string tweetText, Member member);
+        Task<IEnumerable<string>> GetReplyMessage(string userName, string name, 
+            string tweetText, Member member);
         Task<Member?> GetPropublicaMemberInformationAsync(string userName, string name);
     }
 
@@ -26,9 +27,8 @@ namespace VoteTracker
 
         private const int RecentVotePageLimit = 5;
 
-        public PropublicaBusiness(IOptions<PropublicaSettings> settings,
-            IPropublicaApiService propublicaApiService, IPropublicaRepository propublicaRepository,
-            IWordListRepository wordListRepository)
+        public PropublicaBusiness(IOptions<PropublicaSettings> settings, IPropublicaApiService propublicaApiService, 
+            IPropublicaRepository propublicaRepository, IWordListRepository wordListRepository)
         {
             this.propublicaApiService = propublicaApiService;
             this.propublicaRepository = propublicaRepository;
@@ -37,8 +37,8 @@ namespace VoteTracker
             propublicaSettings = settings.Value;
         }
 
-        public async Task<IEnumerable<string>> GetReplyMessage(string userName, string name,
-            string tweetText, Member member)
+        public async Task<IEnumerable<string>> GetReplyMessage(string userName, string name, string tweetText, 
+            Member member)
         {
             var keywords = await GetKeywordsAsync(tweetText);
 
