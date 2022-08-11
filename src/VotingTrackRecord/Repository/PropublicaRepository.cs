@@ -24,7 +24,7 @@ namespace Repository
     public class PropublicaRepository : IPropublicaRepository
     {
         private readonly DatabaseSettings databaseSettings;
-        
+
         public PropublicaRepository(IOptions<DatabaseSettings> settings)
         {
             databaseSettings = settings.Value;
@@ -34,10 +34,8 @@ namespace Repository
         {
             try
             {
-                var result = await GetMongoDb()
-                    .GetCollection<BsonDocument>(databaseSettings.MemberCollectionName)
-                    .Find(new BsonDocument("UserName", userName))
-                    .FirstOrDefaultAsync<BsonDocument>();
+                var result = await GetMongoCollection(userName,
+                    databaseSettings.MemberCollectionName, "UserName");
 
                 if (result == null)
                     return null;
@@ -71,10 +69,9 @@ namespace Repository
         {
             try
             {
-                var result = await GetMongoDb()
-                    .GetCollection<BsonDocument>(databaseSettings.UrlCollectionName)
-                    .Find(new BsonDocument("Url", uri))
-                    .FirstOrDefaultAsync<BsonDocument>();
+                var urlCollectionName = databaseSettings.UrlCollectionName;
+                var docName = "Url";
+                BsonDocument result = await GetMongoCollection(uri, urlCollectionName, docName);
 
                 if (result == null)
                     return null;
@@ -132,6 +129,15 @@ namespace Repository
                 Log.Error(ex, "Error getting tweet from database: {TweetId}", tweetId);
                 throw;
             }
+        }
+
+        private async Task<BsonDocument> GetMongoCollection(string dataId,
+            string urlCollectionName, string docName)
+        {
+            return await GetMongoDb()
+                .GetCollection<BsonDocument>(urlCollectionName)
+                .Find(new BsonDocument(docName, dataId))
+                .FirstOrDefaultAsync<BsonDocument>();
         }
 
         private IMongoDatabase GetMongoDb()

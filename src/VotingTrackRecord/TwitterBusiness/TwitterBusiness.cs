@@ -25,7 +25,7 @@ namespace TwitterService
 
     public class TwitterBusiness : ITwitterBusiness
     {
-        private readonly int BatchSize = 2;
+        private readonly int BatchSize;
 
         private readonly TwitterSettings twitterSettings;
 
@@ -35,14 +35,16 @@ namespace TwitterService
 
         private static List<FriendIdTweetTime>? friendIdsLastTweet = null;
 
-        public TwitterBusiness(IOptions<TwitterSettings> options, IPropublicaBusiness voteTrackerBusiness,
-            IPropublicaRepository propublicaRepository)
+        public TwitterBusiness(IOptions<TwitterSettings> options, IOptions<ApplicationSettings> appSettings,
+            IPropublicaBusiness voteTrackerBusiness, IPropublicaRepository propublicaRepository)
         {
             this.twitterSettings = options.Value;
-
+                
             this.voteTrackerBusiness = voteTrackerBusiness;
 
             this.propublicaRepository = propublicaRepository;
+
+            BatchSize = appSettings.Value.BatchSize;
 
             Task.Run(() => SetFriendIdsAsync()).Wait();
         }
@@ -137,7 +139,7 @@ namespace TwitterService
             var userClient = GetTwitterClient();
 
             foreach (var message in messages)
-            {   
+            {
                 try
                 {
                     Log.Information("Quoting Tweet {TweetId} from {ScreenName}: {Message}", tweet.Id,

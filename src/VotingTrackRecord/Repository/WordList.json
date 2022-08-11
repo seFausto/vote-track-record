@@ -2,24 +2,66 @@
   "wordList": [
     {
       "word": "gender",
-      "related": [ "sexuality", "homo", "lgbt" ]
+      "related": [
+        "sexuality",
+        "homo",
+        "lgbt"
+      ]
     },
     {
       "word": "gun",
-      "related": [ "weapon", "ar-15", "pistol", "second amendment",
-                   "2A", "gun", "school shooting", "mass shooting" ]
+      "related": [
+        "weapon",
+        "ar-15",
+        "pistol",
+        "second amendment",
+        "rifle",
+        "machine gun",
+        "semi automatic",
+        "semi-automatic",
+        "2A",
+        "2-A",
+        "gun",
+        "school shooting",
+        "mass shooting"
+      ]
     },
     {
       "word": "fuel",
-      "related": [ "gas", "gasoline", "fossil fuels", "fuel" ]
+      "related": [
+        "gas",
+        "gasoline",
+        "fossil fuels",
+        "fuel",
+        "pump",
+        "oil"
+      ]
     },
     {
       "word": "abortion",
-      "related": [ "womb", "abortion", "unborn life", "unborn lives" ]
+      "related": [
+        "womb",
+        "abortion",
+        "unborn li",
+        "fetus",
+        "pregnan"
+      ]
     },
     {
       "word": "baby formula",
-      "related": [ "baby formula" ]
+      "related": [
+        "baby formula",
+        "enfamil",
+        "similac"
+      ]
+    },
+    {
+      "word": "fbi",
+      "related": [
+        "blue lives",
+        "raid",
+        "defund"
+      ]
     }
   ]
 

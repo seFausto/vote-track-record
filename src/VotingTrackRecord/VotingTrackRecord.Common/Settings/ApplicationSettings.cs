@@ -10,5 +10,6 @@ namespace VotingTrackRecord.Common.Settings
     {
         public string LoggingHttpEndpoint { get; set; } = string.Empty;
         public string XApiKey { get; set; } = string.Empty;
+        public int BatchSize { get; set; } = 2;
     }
 }

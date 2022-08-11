@@ -20,11 +20,5 @@ namespace VotingTrackRecord.Common.TwitterApiClasses
 
         [JsonPropertyName("text")]
         public string Text { get; set; } = string.Empty;
-
-        //[JsonPropertyName("user")]
-        //public User User { get; set; }
-
-        //[JsonPropertyName("entities")]
-        //public Entities Entities { get; set; }
     }
 }
